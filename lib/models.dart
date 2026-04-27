@@ -95,6 +95,32 @@ class WhyMeFeature {
   });
 }
 
+class SkillCategory {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final List<String> skills;
+
+  const SkillCategory({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.skills,
+  });
+}
+
+class SkillMarqueeItem {
+  final String name;
+  final IconData icon;
+  const SkillMarqueeItem({required this.name, required this.icon});
+}
+
+class HeroStat {
+  final String num;
+  final String label;
+  const HeroStat({required this.num, required this.label});
+}
+
 class ContentData {
   static const List<Project> projects = [
     Project(
@@ -469,5 +495,55 @@ class ContentData {
       link: 'https://www.linkedin.com/in/farmanullah-ansari',
       color: Color(0xFFe040fb),
     ),
+  ];
+
+  static const List<SkillCategory> skills = [
+    SkillCategory(
+      title: 'Frontend Development',
+      icon: FontAwesomeIcons.react,
+      color: Color(0xFF61DAFB),
+      skills: ['React.js', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Flutter'],
+    ),
+    SkillCategory(
+      title: 'Backend Engineering',
+      icon: FontAwesomeIcons.nodeJs,
+      color: Color(0xFF339933),
+      skills: ['Node.js', 'Express.js', 'ASP.NET Core', 'C# / .NET', 'RESTful APIs', 'JWT Auth'],
+    ),
+    SkillCategory(
+      title: 'Database & Cloud',
+      icon: FontAwesomeIcons.database,
+      color: Color(0xFF47A248),
+      skills: ['MongoDB', 'SQL Server', 'AWS (EC2/S3)', 'Docker', 'CI/CD Pipelines', 'Nginx'],
+    ),
+    SkillCategory(
+      title: 'Data & Analytics',
+      icon: FontAwesomeIcons.chartLine,
+      color: Color(0xFFF2C811),
+      skills: ['Power BI', 'Python', 'Data Visualization', 'SQL Queries', 'Excel Mastery'],
+    ),
+  ];
+
+  static const List<SkillMarqueeItem> marquee = [
+    SkillMarqueeItem(name: 'C#', icon: FontAwesomeIcons.code),
+    SkillMarqueeItem(name: 'ASP.NET Core', icon: FontAwesomeIcons.networkWired),
+    SkillMarqueeItem(name: 'React.js', icon: FontAwesomeIcons.react),
+    SkillMarqueeItem(name: 'Node.js', icon: FontAwesomeIcons.nodeJs),
+    SkillMarqueeItem(name: 'MongoDB', icon: FontAwesomeIcons.database),
+    SkillMarqueeItem(name: 'Express.js', icon: FontAwesomeIcons.server),
+    SkillMarqueeItem(name: 'Docker', icon: FontAwesomeIcons.docker),
+    SkillMarqueeItem(name: 'AWS', icon: FontAwesomeIcons.aws),
+    SkillMarqueeItem(name: 'Python', icon: FontAwesomeIcons.python),
+    SkillMarqueeItem(name: 'Linux', icon: FontAwesomeIcons.linux),
+    SkillMarqueeItem(name: 'Git & GitHub', icon: FontAwesomeIcons.github),
+    SkillMarqueeItem(name: 'Power BI', icon: FontAwesomeIcons.chartBar),
+    SkillMarqueeItem(name: 'TypeScript', icon: FontAwesomeIcons.code),
+    SkillMarqueeItem(name: 'Tailwind', icon: FontAwesomeIcons.css3Alt),
+  ];
+
+  static const List<HeroStat> stats = [
+    HeroStat(num: '3+', label: 'Years Coding'),
+    HeroStat(num: '50+', label: 'Projects Built'),
+    HeroStat(num: '10+', label: 'Certifications'),
   ];
 }

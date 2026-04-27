@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: AppBar(
               backgroundColor: _isScrolled
-                  ? AppColors.navbarBg
+                  ? (themeProvider.isDark ? AppColors.navbarBg : AppColors.navbarBgLight)
                   : Colors.transparent,
               elevation: 0,
               centerTitle: false,
@@ -112,11 +112,11 @@ class _HomePageState extends State<HomePage> {
                 IconButton(
                   icon: Icon(themeProvider.isDark ? FontAwesomeIcons.sun : FontAwesomeIcons.moon, size: 18),
                   onPressed: () => themeProvider.toggleTheme(),
-                  color: AppColors.text,
+                  color: themeProvider.isDark ? AppColors.text : AppColors.textLight,
                 ),
                 Builder(
                   builder: (context) => IconButton(
-                    icon: const Icon(Icons.menu, color: AppColors.text),
+                    icon: Icon(Icons.menu, color: themeProvider.isDark ? AppColors.text : AppColors.textLight),
                     onPressed: () => Scaffold.of(context).openEndDrawer(),
                   ),
                 ),
@@ -126,21 +126,25 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       endDrawer: _buildDrawer(context, colorScheme),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        child: Column(
-          children: [
-            SectionWrapper(key: _homeKey, hasBorder: false, topPadding: 0, bottomPadding: 0, glowColors: const [AppColors.c1, AppColors.c3], child: const HeroSection()),
-            SectionWrapper(key: _aboutKey, glowColors: const [AppColors.c2, AppColors.c4], child: const AboutSection()),
-            SectionWrapper(key: _skillsKey, glowColors: const [AppColors.c3, AppColors.c1], child: const SkillsSection()),
-            SectionWrapper(key: _projectsKey, glowColors: const [AppColors.c6, AppColors.c2], child: const ProjectsSection()),
-            SectionWrapper(key: _experienceKey, glowColors: const [AppColors.c5, AppColors.c1], child: const ExperienceSection()),
-            SectionWrapper(key: _certificationsKey, glowColors: const [AppColors.c4, AppColors.c7], child: const CertificationsSection()),
-            SectionWrapper(key: _whyMeKey, glowColors: const [AppColors.c1, AppColors.c6], child: const WhyMeSection()),
-            SectionWrapper(key: _blogKey, glowColors: const [AppColors.c3, AppColors.c5], child: const BlogSection()),
-            SectionWrapper(key: _contactKey, hasBorder: false, glowColors: const [AppColors.c1, AppColors.c2], child: const ContactSection()),
-            const FooterSection(),
-          ],
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              SectionWrapper(key: _homeKey, hasBorder: false, topPadding: 0, bottomPadding: 0, glowColors: const [AppColors.c1, AppColors.c3], child: const HeroSection()),
+              SectionWrapper(key: _aboutKey, glowColors: const [AppColors.c2, AppColors.c4], child: const AboutSection()),
+              SectionWrapper(key: _skillsKey, glowColors: const [AppColors.c3, AppColors.c1], child: const SkillsSection()),
+              SectionWrapper(key: _projectsKey, glowColors: const [AppColors.c6, AppColors.c2], child: const ProjectsSection()),
+              SectionWrapper(key: _experienceKey, glowColors: const [AppColors.c5, AppColors.c1], child: const ExperienceSection()),
+              SectionWrapper(key: _certificationsKey, glowColors: const [AppColors.c4, AppColors.c7], child: const CertificationsSection()),
+              SectionWrapper(key: _whyMeKey, glowColors: const [AppColors.c1, AppColors.c6], child: const WhyMeSection()),
+              SectionWrapper(key: _blogKey, glowColors: const [AppColors.c3, AppColors.c5], child: const BlogSection()),
+              SectionWrapper(key: _contactKey, hasBorder: false, glowColors: const [AppColors.c1, AppColors.c2], child: const ContactSection()),
+              const FooterSection(),
+            ],
+          ),
         ),
       ),
       floatingActionButton: _isScrolled
@@ -172,36 +176,39 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildDrawer(BuildContext context, ColorScheme colorScheme) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDark;
+
     return Drawer(
       backgroundColor: Colors.transparent,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.bg.withValues(alpha: 0.85),
-            border: const Border(left: BorderSide(color: AppColors.border, width: 0.5)),
+            color: (isDark ? AppColors.bg : Colors.white).withValues(alpha: 0.85),
+            border: Border(left: BorderSide(color: isDark ? AppColors.border : AppColors.borderLight, width: 0.5)),
           ),
           child: Column(
             children: [
-              _buildDrawerHeader(),
-              const Divider(color: AppColors.border, height: 1),
+              _buildDrawerHeader(isDark),
+              Divider(color: isDark ? AppColors.border : AppColors.borderLight, height: 1),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                   children: [
-                    _buildDrawerItem('Home', FontAwesomeIcons.house, _homeKey),
-                    _buildDrawerItem('About', FontAwesomeIcons.user, _aboutKey),
-                    _buildDrawerItem('Skills', FontAwesomeIcons.bolt, _skillsKey),
-                    _buildDrawerItem('Projects', FontAwesomeIcons.code, _projectsKey),
-                    _buildDrawerItem('Experience', FontAwesomeIcons.briefcase, _experienceKey),
-                    _buildDrawerItem('Certifications', FontAwesomeIcons.certificate, _certificationsKey),
-                    _buildDrawerItem('Why Me', FontAwesomeIcons.circleQuestion, _whyMeKey),
-                    _buildDrawerItem('Blog', FontAwesomeIcons.newspaper, _blogKey),
-                    _buildDrawerItem('Contact', FontAwesomeIcons.envelope, _contactKey),
+                    _buildDrawerItem('Home', FontAwesomeIcons.house, _homeKey, isDark),
+                    _buildDrawerItem('About', FontAwesomeIcons.user, _aboutKey, isDark),
+                    _buildDrawerItem('Skills', FontAwesomeIcons.bolt, _skillsKey, isDark),
+                    _buildDrawerItem('Projects', FontAwesomeIcons.code, _projectsKey, isDark),
+                    _buildDrawerItem('Experience', FontAwesomeIcons.briefcase, _experienceKey, isDark),
+                    _buildDrawerItem('Certifications', FontAwesomeIcons.certificate, _certificationsKey, isDark),
+                    _buildDrawerItem('Why Me', FontAwesomeIcons.circleQuestion, _whyMeKey, isDark),
+                    _buildDrawerItem('Blog', FontAwesomeIcons.newspaper, _blogKey, isDark),
+                    _buildDrawerItem('Contact', FontAwesomeIcons.envelope, _contactKey, isDark),
                   ],
                 ),
               ),
-              _buildDrawerFooter(),
+              _buildDrawerFooter(isDark),
             ],
           ),
         ),
@@ -209,7 +216,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildDrawerHeader() {
+  Widget _buildDrawerHeader(bool isDark) {
     return Container(
       padding: const EdgeInsets.only(top: 60, bottom: 30, left: 24, right: 24),
       decoration: BoxDecoration(
@@ -232,19 +239,19 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text('Farmanullah Ansari', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+          Text('Farmanullah Ansari', style: TextStyle(color: isDark ? Colors.white : AppColors.textLight, fontSize: 20, fontWeight: FontWeight.w900)),
           const Text('Full-Stack Engineer', style: TextStyle(color: AppColors.c1, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerItem(String title, IconData icon, GlobalKey key) {
+  Widget _buildDrawerItem(String title, IconData icon, GlobalKey key, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: Icon(icon, color: AppColors.textDim, size: 18),
-        title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
+        leading: Icon(icon, color: isDark ? AppColors.textDim : AppColors.textDimLight, size: 18),
+        title: Text(title, style: TextStyle(color: isDark ? Colors.white : AppColors.textLight, fontWeight: FontWeight.w600, fontSize: 15)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         hoverColor: AppColors.c1.withValues(alpha: 0.1),
         onTap: () {
@@ -256,7 +263,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildDrawerFooter() {
+  Widget _buildDrawerFooter(bool isDark) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -264,21 +271,21 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildFooterIcon(FontAwesomeIcons.github, 'https://github.com/farmanullah1'),
-              _buildFooterIcon(FontAwesomeIcons.linkedin, 'https://linkedin.com/in/farmanullah-ansari'),
-              _buildFooterIcon(FontAwesomeIcons.twitter, 'https://x.com/farmanullah9088'),
+              _buildFooterIcon(FontAwesomeIcons.github, 'https://github.com/farmanullah1', isDark),
+              _buildFooterIcon(FontAwesomeIcons.linkedin, 'https://linkedin.com/in/farmanullah-ansari', isDark),
+              _buildFooterIcon(FontAwesomeIcons.twitter, 'https://x.com/farmanullah9088', isDark),
             ],
           ),
           const SizedBox(height: 20),
-          const Text('v1.0.0 Stable', style: TextStyle(color: AppColors.textDim, fontSize: 11, fontFamily: 'Fira Code')),
+          Text('v1.0.0 Stable', style: TextStyle(color: isDark ? AppColors.textDim : AppColors.textDimLight, fontSize: 11, fontFamily: 'Fira Code')),
         ],
       ),
     );
   }
 
-  Widget _buildFooterIcon(IconData icon, String url) {
+  Widget _buildFooterIcon(IconData icon, String url, bool isDark) {
     return IconButton(
-      icon: Icon(icon, color: AppColors.textDim, size: 18),
+      icon: Icon(icon, color: isDark ? AppColors.textDim : AppColors.textDimLight, size: 18),
       onPressed: () => launchUrl(Uri.parse(url)),
     );
   }
