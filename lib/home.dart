@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme.dart';
@@ -59,72 +60,69 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Column(
-          children: [
-            AppBar(
+        preferredSize: const Size.fromHeight(68),
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: AppBar(
               backgroundColor: _isScrolled
-                  ? colorScheme.surface.withOpacity(0.85)
+                  ? AppColors.navbarBg
                   : Colors.transparent,
               elevation: 0,
               centerTitle: false,
-              title: Text(
-                'Farmanullah.',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+              title: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [AppColors.c1, AppColors.c3, AppColors.c1],
+                ).createShader(bounds),
+                child: const Text(
+                  'Farmanullah.',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 28,
+                    letterSpacing: -1,
+                    color: Colors.white,
+                  ),
                 ),
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(3),
+                child: _isScrolled
+                    ? Container(
+                        height: 3,
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(colors: [AppColors.c1, AppColors.c2, AppColors.c3]),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: _scrollProgress,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              boxShadow: [BoxShadow(color: AppColors.c1, blurRadius: 12)],
+                            ),
+                          ),
+                        ),
+                      )
+                    : const SizedBox(),
               ),
               actions: [
                 IconButton(
                   icon: Icon(themeProvider.isDark ? FontAwesomeIcons.sun : FontAwesomeIcons.moon, size: 18),
                   onPressed: () => themeProvider.toggleTheme(),
-                  color: colorScheme.onSurface,
+                  color: AppColors.text,
                 ),
                 Builder(
                   builder: (context) => IconButton(
-                    icon: Icon(Icons.menu, color: colorScheme.onSurface),
+                    icon: const Icon(Icons.menu, color: AppColors.text),
                     onPressed: () => Scaffold.of(context).openEndDrawer(),
                   ),
                 ),
               ],
             ),
-            if (_isScrolled)
-              LinearProgressIndicator(
-                value: _scrollProgress,
-                backgroundColor: Colors.transparent,
-                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                minHeight: 2,
-              ),
-          ],
-        ),
-      ),
-      endDrawer: Drawer(
-        child: Container(
-          color: colorScheme.surface,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(color: colorScheme.primary),
-                child: const Text(
-                  'Navigation',
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                ),
-              ),
-              _buildDrawerItem('Home', _homeKey),
-              _buildDrawerItem('About', _aboutKey),
-              _buildDrawerItem('Skills', _skillsKey),
-              _buildDrawerItem('Projects', _projectsKey),
-              _buildDrawerItem('Experience', _experienceKey),
-              _buildDrawerItem('Certifications', _certificationsKey),
-              _buildDrawerItem('Why Work With Me?', _whyMeKey),
-              _buildDrawerItem('Insights & Blog', _blogKey),
-              _buildDrawerItem('Contact', _contactKey),
-            ],
           ),
         ),
       ),
+      endDrawer: _buildDrawer(context, colorScheme),
       body: SingleChildScrollView(
         controller: _scrollController,
         child: Column(
@@ -145,7 +143,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: _isScrolled
           ? FloatingActionButton(
               mini: true,
-              backgroundColor: colorScheme.primary,
+              backgroundColor: AppColors.c2,
               child: const Icon(Icons.arrow_upward, color: Colors.white),
               onPressed: () => _scrollTo(_homeKey),
             )
@@ -153,9 +151,46 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildDrawer(BuildContext context, ColorScheme colorScheme) {
+    return Drawer(
+      backgroundColor: AppColors.bg.withOpacity(0.96),
+      child: Column(
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [AppColors.c1, AppColors.c2]),
+            ),
+            child: const Center(
+              child: Text(
+                'Navigation',
+                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildDrawerItem('Home', _homeKey),
+                _buildDrawerItem('About', _aboutKey),
+                _buildDrawerItem('Skills', _skillsKey),
+                _buildDrawerItem('Projects', _projectsKey),
+                _buildDrawerItem('Experience', _experienceKey),
+                _buildDrawerItem('Certifications', _certificationsKey),
+                _buildDrawerItem('Why Me', _whyMeKey),
+                _buildDrawerItem('Insights', _blogKey),
+                _buildDrawerItem('Contact', _contactKey),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDrawerItem(String title, GlobalKey key) {
     return ListTile(
-      title: Text(title),
+      title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       onTap: () {
         Navigator.pop(context);
         _scrollTo(key);
