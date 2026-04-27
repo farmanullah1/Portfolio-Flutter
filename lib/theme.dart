@@ -47,7 +47,7 @@ class AppTheme {
       primary: AppColors.c2,
       secondary: AppColors.c3,
       surface: AppColors.bgCard,
-      background: AppColors.bg,
+      error: Colors.redAccent,
       onPrimary: Colors.white,
     ),
   );
@@ -61,7 +61,7 @@ class AppTheme {
       primary: AppColors.c2,
       secondary: AppColors.c3,
       surface: Colors.white,
-      background: AppColors.bgLight,
+      error: Colors.red,
       onPrimary: Colors.white,
     ),
   );

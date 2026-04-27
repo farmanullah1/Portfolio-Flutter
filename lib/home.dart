@@ -6,9 +6,10 @@ import 'theme.dart';
 import 'sections.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -147,7 +148,7 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]),
-                boxShadow: [BoxShadow(color: AppColors.c1.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
+                boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
@@ -155,7 +156,7 @@ class _HomePageState extends State<HomePage> {
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: FloatingActionButton(
                     mini: true,
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     elevation: 0,
                     child: const Icon(Icons.arrow_upward, color: Colors.white, size: 20),
                     onPressed: () {
@@ -165,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-            ).animate().scale(duration: 400.ms, curve: Curves.backOut)
+            ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack)
           : null,
     );
   }
@@ -177,7 +178,7 @@ class _HomePageState extends State<HomePage> {
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.bg.withOpacity(0.85),
+            color: AppColors.bg.withValues(alpha: 0.85),
             border: const Border(left: BorderSide(color: AppColors.border, width: 0.5)),
           ),
           child: Column(
@@ -215,7 +216,7 @@ class _HomePageState extends State<HomePage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.c1.withOpacity(0.15), Colors.transparent],
+          colors: [AppColors.c1.withValues(alpha: 0.15), Colors.transparent],
         ),
       ),
       child: Column(
@@ -245,7 +246,7 @@ class _HomePageState extends State<HomePage> {
         leading: Icon(icon, color: AppColors.textDim, size: 18),
         title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        hoverColor: AppColors.c1.withOpacity(0.1),
+        hoverColor: AppColors.c1.withValues(alpha: 0.1),
         onTap: () {
           HapticFeedback.lightImpact();
           Navigator.pop(context);

@@ -13,7 +13,7 @@ class SectionHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
 
-  const SectionHeader({Key? key, required this.title, this.subtitle}) : super(key: key);
+  const SectionHeader({super.key, required this.title, this.subtitle}) ;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,7 @@ class SectionHeader extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]),
             borderRadius: BorderRadius.circular(4),
-            boxShadow: [BoxShadow(color: AppColors.c1.withOpacity(0.5), blurRadius: 10)],
+            boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.5), blurRadius: 10)],
           ),
         ).animate().scaleX(begin: 0, end: 1, duration: 800.ms),
         if (subtitle != null) ...[
@@ -65,13 +65,13 @@ class SectionWrapper extends StatelessWidget {
   final bool hasBorder;
 
   const SectionWrapper({
-    Key? key,
+    super.key,
     required this.child,
     this.glowColors = const [AppColors.c1, AppColors.c2],
     this.topPadding = 100,
     this.bottomPadding = 100,
     this.hasBorder = true,
-  }) : super(key: key);
+  }) ;
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +90,7 @@ class SectionWrapper extends StatelessWidget {
               height: 600,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [glowColors[0].withOpacity(0.07), glowColors[0].withOpacity(0)]),
+                gradient: RadialGradient(colors: [glowColors[0].withValues(alpha: 0.07), glowColors[0].withValues(alpha: 0)]),
               ),
             ),
           ),
@@ -102,7 +102,7 @@ class SectionWrapper extends StatelessWidget {
               height: 600,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [glowColors[1].withOpacity(0.07), glowColors[1].withOpacity(0)]),
+                gradient: RadialGradient(colors: [glowColors[1].withValues(alpha: 0.07), glowColors[1].withValues(alpha: 0)]),
               ),
             ),
           ),
@@ -125,26 +125,26 @@ class GlassCard extends StatelessWidget {
   final Border? border;
 
   const GlassCard({
-    Key? key,
+    super.key,
     required this.child,
     this.blur = 24,
     this.opacity = 0.04,
     this.color,
     this.borderRadius,
     this.border,
-  }) : super(key: key);
+  }) ;
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.circular(18),
       child: BackdropFilter(
-        filter: ColorFilter.mode(Colors.white.withOpacity(0.01), BlendMode.srcOver),
+        filter: ColorFilter.mode(Colors.white.withValues(alpha: 0.01), BlendMode.srcOver),
         child: Container(
           decoration: BoxDecoration(
-            color: color ?? Colors.white.withOpacity(opacity),
+            color: color ?? Colors.white.withValues(alpha: opacity),
             borderRadius: borderRadius ?? BorderRadius.circular(18),
-            border: border ?? Border.all(color: Colors.white.withOpacity(0.08)),
+            border: border ?? Border.all(color: Colors.white.withValues(alpha: 0.08)),
           ),
           child: child,
         ),
@@ -156,7 +156,7 @@ class GlassCard extends StatelessWidget {
 // --- Hero Section ---
 
 class HeroSection extends StatefulWidget {
-  const HeroSection({Key? key}) : super(key: key);
+  const HeroSection({super.key}) ;
 
   @override
   State<HeroSection> createState() => _HeroSectionState();
@@ -250,7 +250,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
           _buildBackground(),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 100, vertical: 80),
-            child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
+            child: isMobile ? _buildMobileLayout(screenWidth) : _buildDesktopLayout(screenWidth),
           ),
           Positioned(
             bottom: 30,
@@ -294,40 +294,42 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: RadialGradient(
-            colors: [color, color.withOpacity(0)],
+            colors: [color, color.withValues(alpha: 0)],
           ),
         ),
       ).animate(onPlay: (c) => c.repeat(reverse: true)).move(begin: const Offset(-20, -20), end: const Offset(20, 20), duration: 8.seconds),
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(double screenWidth) {
+    final isMobile = screenWidth < 1000;
     return Row(
       children: [
         Expanded(
           flex: 1,
-          child: _buildTextContent(),
+          child: _buildTextContent(isMobile),
         ),
         Expanded(
           flex: 1,
-          child: _buildHeroImage(),
+          child: _buildOrbitalImage(screenWidth, isMobile),
         ),
       ],
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(double screenWidth) {
+    final isMobile = screenWidth < 1000;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildHeroImage(),
+        _buildOrbitalImage(screenWidth, isMobile),
         const SizedBox(height: 60),
-        _buildTextContent(),
+        _buildTextContent(isMobile),
       ],
     );
   }
 
-  Widget _buildTextContent() {
+  Widget _buildTextContent(bool isMobile) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,8 +400,8 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
           alignment: Alignment.center,
           children: [
             // Background Glows
-            _buildOrb(AppColors.c1.withOpacity(0.1), size: size * 0.8),
-            _buildOrb(AppColors.c2.withOpacity(0.05), size: size * 0.6, right: 0),
+            _buildOrb(AppColors.c1.withValues(alpha: 0.1), size: size * 0.8),
+            _buildOrb(AppColors.c2.withValues(alpha: 0.05), size: size * 0.6, right: 0),
 
             // Orbiting Badges
             ..._buildFloatingBadges(size),
@@ -408,7 +410,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
             Container(
               width: size * 0.85,
               height: size * 0.85,
-              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.c1.withOpacity(0.2), width: 1.5, style: BorderStyle.solid)),
+              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.c1.withValues(alpha: 0.2), width: 1.5, style: BorderStyle.solid)),
             ).animate(onPlay: (c) => c.repeat()).rotate(duration: 12.seconds),
 
             // Sweep Gradient Ring
@@ -418,7 +420,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: SweepGradient(
-                  colors: [AppColors.c1.withOpacity(0), AppColors.c1.withOpacity(0.4), AppColors.c1.withOpacity(0)],
+                  colors: [AppColors.c1.withValues(alpha: 0), AppColors.c1.withValues(alpha: 0.4), AppColors.c1.withValues(alpha: 0)],
                   stops: const [0.0, 0.5, 1.0],
                 ),
               ),
@@ -432,8 +434,8 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.c2, width: 2),
                 boxShadow: [
-                  BoxShadow(color: AppColors.c1.withOpacity(0.3), blurRadius: 40),
-                  BoxShadow(color: AppColors.c2.withOpacity(0.15), blurRadius: 80),
+                  BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 40),
+                  BoxShadow(color: AppColors.c2.withValues(alpha: 0.15), blurRadius: 80),
                 ],
               ),
               child: ClipOval(
@@ -478,7 +480,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
       opacity: 0.85,
       color: const Color(0xD10F0724),
       borderRadius: BorderRadius.circular(30),
-      border: Border.all(color: color.withOpacity(0.3)),
+      border: Border.all(color: color.withValues(alpha: 0.3)),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: isMini ? 8 : 12, vertical: isMini ? 4 : 6),
         child: Row(
@@ -499,9 +501,9 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.c1.withOpacity(0.12),
+        color: AppColors.c1.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(50),
-        border: Border.all(color: AppColors.c1.withOpacity(0.38)),
+        border: Border.all(color: AppColors.c1.withValues(alpha: 0.38)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -524,53 +526,6 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildStats() {
-    final stats = [
-      {'num': '3+', 'label': 'Years Coding'},
-      {'num': '10+', 'label': 'Projects Built'},
-      {'num': '10+', 'label': 'Certifications'},
-    ];
-
-    return GlassCard(
-      opacity: 0.1,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: stats.asMap().entries.map((e) {
-            return Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      e.value['num']!,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.c1,
-                      ),
-                    ),
-                    Text(
-                      e.value['label']!.toUpperCase(),
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textDim, letterSpacing: 1),
-                    ),
-                  ],
-                ),
-                if (e.key < stats.length - 1)
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: Colors.white.withOpacity(0.1),
-                    margin: const EdgeInsets.symmetric(horizontal: 32),
-                  ),
-              ],
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
 
   Widget _buildActions(bool isMobile) {
     return Wrap(
@@ -589,7 +544,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
       decoration: isPrimary ? BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]),
-        boxShadow: [BoxShadow(color: AppColors.c1.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5))],
+        boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))],
       ) : null,
       child: ElevatedButton.icon(
         onPressed: () {
@@ -629,9 +584,9 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
         onPressed: () => launchUrl(Uri.parse(url)),
         icon: Icon(icon, size: 20, color: AppColors.textMuted),
         style: IconButton.styleFrom(
-          backgroundColor: Colors.white.withOpacity(0.04),
+          backgroundColor: Colors.white.withValues(alpha: 0.04),
           padding: const EdgeInsets.all(12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.white.withOpacity(0.08))),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
         ),
       ),
     );
@@ -650,7 +605,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
           height: 34,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.c2.withOpacity(0.5)),
+            border: Border.all(color: AppColors.c2.withValues(alpha: 0.5)),
           ),
           child: Column(
             children: [
@@ -711,7 +666,7 @@ class DashedRingPainter extends CustomPainter {
 // --- About Section ---
 
 class AboutSection extends StatelessWidget {
-  const AboutSection({Key? key}) : super(key: key);
+  const AboutSection({super.key}) ;
 
   @override
   Widget build(BuildContext context) {
@@ -829,7 +784,7 @@ class AboutSection extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [color.withOpacity(0.3), color.withOpacity(0)]),
+                gradient: RadialGradient(colors: [color.withValues(alpha: 0.3), color.withValues(alpha: 0)]),
               ),
             ),
           ),
@@ -852,7 +807,7 @@ class AboutSection extends StatelessWidget {
             right: 0,
             child: Container(
               height: 3,
-              color: color.withOpacity(0.6),
+              color: color.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -864,7 +819,7 @@ class AboutSection extends StatelessWidget {
 // --- Skills Section ---
 
 class SkillsSection extends StatefulWidget {
-  const SkillsSection({Key? key}) : super(key: key);
+  const SkillsSection({super.key}) ;
   @override
   State<SkillsSection> createState() => _SkillsSectionState();
 }
@@ -905,9 +860,8 @@ class _SkillsSectionState extends State<SkillsSection> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
-    return Container(
-      child: Column(
-        children: [
+    return Column(
+      children: [
           const SectionHeader(title: 'Technical Skills'),
           const SizedBox(height: 40),
           _buildInfiniteMarquee(),
@@ -976,21 +930,25 @@ class _SkillsSectionState extends State<SkillsSection> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(s['label'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              Text("${(s['value'] as double * 100).toInt()}%", style: TextStyle(color: s['color'] as Color, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Fira Code')),
+              Text("${((s['value'] as double) * 100).toInt()}%",
+                  style: TextStyle(color: s['color'] as Color, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Fira Code')),
             ],
           ),
           const SizedBox(height: 12),
           Stack(
             children: [
-              Container(height: 8, width: double.infinity, decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(4))),
+              Container(
+                  height: 8,
+                  width: double.infinity,
+                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(4))),
               FractionallySizedBox(
                 widthFactor: s['value'] as double,
                 child: Container(
                   height: 8,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [s['color'] as Color, (s['color'] as Color).withOpacity(0.5)]),
+                    gradient: LinearGradient(colors: [s['color'] as Color, (s['color'] as Color).withValues(alpha: 0.5)]),
                     borderRadius: BorderRadius.circular(4),
-                    boxShadow: [BoxShadow(color: (s['color'] as Color).withOpacity(0.3), blurRadius: 10)],
+                    boxShadow: [BoxShadow(color: (s['color'] as Color).withValues(alpha: 0.3), blurRadius: 10)],
                   ),
                 ).animate().shimmer(delay: 1.seconds, duration: 2.seconds),
               ).animate().slideX(begin: -1, end: 0, duration: 1.5.seconds, curve: Curves.easeOutCubic),
@@ -1026,7 +984,7 @@ class _SkillsSectionState extends State<SkillsSection> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(item['icon'] as IconData, size: 64, color: (item['color'] as Color).withOpacity(0.6)).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(begin: -5, end: 5, duration: 2.seconds),
+                Icon(item['icon'] as IconData, size: 64, color: (item['color'] as Color).withValues(alpha: 0.6)).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(begin: -5, end: 5, duration: 2.seconds),
                 const SizedBox(height: 16),
                 Text(item['name'] as String, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.textDim, fontSize: 16)),
               ],
@@ -1074,7 +1032,7 @@ class _SkillsSectionState extends State<SkillsSection> {
   Widget _buildSkillPill(String name, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(0.2))),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withValues(alpha: 0.2))),
       child: Text(name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
     );
   }
@@ -1083,7 +1041,7 @@ class _SkillsSectionState extends State<SkillsSection> {
 // --- Projects Section ---
 
 class ProjectsSection extends StatefulWidget {
-  const ProjectsSection({Key? key}) : super(key: key);
+  const ProjectsSection({super.key}) ;
   @override
   State<ProjectsSection> createState() => _ProjectsSectionState();
 }
@@ -1136,9 +1094,8 @@ class _ProjectsSectionState extends State<ProjectsSection> {
             ),
           ],
         ],
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildFilters() {
     final filters = ['All', 'Featured', 'MERN', 'React', '.NET', 'TypeScript'];
@@ -1172,7 +1129,7 @@ class _ProjectsSectionState extends State<ProjectsSection> {
               top: 12, right: 12,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: AppColors.c1.withOpacity(0.2), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.c1)),
+                decoration: BoxDecoration(color: AppColors.c1.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.c1)),
                 child: const Row(children: [Icon(Icons.star, size: 10, color: AppColors.c1), SizedBox(width: 4), Text("Featured", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.c1))]),
               ),
             ),
@@ -1210,8 +1167,8 @@ class _ProjectsSectionState extends State<ProjectsSection> {
       onTap: () => launchUrl(Uri.parse(url)),
       child: Container(
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white.withOpacity(0.08))),
-        child: Icon(icon, size: 16, color: Colors.white.withOpacity(0.8)),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.04), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white.withValues(alpha: 0.08))),
+        child: Icon(icon, size: 16, color: Colors.white.withValues(alpha: 0.8)),
       ),
     );
   }
@@ -1220,7 +1177,7 @@ class _ProjectsSectionState extends State<ProjectsSection> {
 // --- Experience Section ---
 
 class ExperienceSection extends StatelessWidget {
-  const ExperienceSection({Key? key}) : super(key: key);
+  const ExperienceSection({super.key}) ;
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
@@ -1233,7 +1190,7 @@ class ExperienceSection extends StatelessWidget {
           const SizedBox(height: 64),
           Stack(
             children: [
-              Positioned(left: 20, top: 0, bottom: 0, child: Container(width: 4, decoration: BoxDecoration(gradient: const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [AppColors.c1, AppColors.c2, AppColors.c3]), borderRadius: BorderRadius.circular(4), boxShadow: [BoxShadow(color: AppColors.c2.withOpacity(0.3), blurRadius: 10)]))),
+              Positioned(left: 20, top: 0, bottom: 0, child: Container(width: 4, decoration: BoxDecoration(gradient: const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [AppColors.c1, AppColors.c2, AppColors.c3]), borderRadius: BorderRadius.circular(4), boxShadow: [BoxShadow(color: AppColors.c2.withValues(alpha: 0.3), blurRadius: 10)]))),
               Column(children: ContentData.experiences.asMap().entries.map((e) => _buildTimelineItem(context, e.value, e.key)).toList()),
             ],
           ),
@@ -1259,7 +1216,7 @@ class ExperienceSection extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]),
                 border: Border.all(color: AppColors.bg, width: 4),
-                boxShadow: [BoxShadow(color: AppColors.c1.withOpacity(0.3), blurRadius: 10)],
+                boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 10)],
               ),
               child: Icon(
                 exp.type == 'work' ? FontAwesomeIcons.briefcase : FontAwesomeIcons.graduationCap,
@@ -1277,7 +1234,7 @@ class ExperienceSection extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(color: AppColors.c1.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.c1.withOpacity(0.3))),
+                    decoration: BoxDecoration(color: AppColors.c1.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.c1.withValues(alpha: 0.3))),
                     child: Text(exp.date, style: const TextStyle(color: AppColors.c1, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Fira Code')),
                   ),
                   const SizedBox(height: 16),
@@ -1309,7 +1266,7 @@ class ExperienceSection extends StatelessWidget {
 // --- Certifications Section ---
 
 class CertificationsSection extends StatefulWidget {
-  const CertificationsSection({Key? key}) : super(key: key);
+  const CertificationsSection({super.key}) ;
   @override
   State<CertificationsSection> createState() => _CertificationsSectionState();
 }
@@ -1329,27 +1286,27 @@ class _CertificationsSectionState extends State<CertificationsSection> {
     return Column(
       children: [
         const SectionHeader(title: 'Licenses & Certifications'),
-          const SizedBox(height: 32),
-          _buildStatsBar(),
-          const SizedBox(height: 40),
-          _buildSearchBar(),
-          const SizedBox(height: 32),
-          _buildFilters(),
-          const SizedBox(height: 48),
-          GridView.builder(
-            shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-            itemCount: filtered.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: MediaQuery.of(context).size.width < 800 ? 1 : (MediaQuery.of(context).size.width < 1200 ? 2 : 3),
-              crossAxisSpacing: 24,
-              mainAxisSpacing: 24,
-              childAspectRatio: 0.9,
-            ),
-            itemBuilder: (context, i) => _buildCertCard(filtered[i]),
+        const SizedBox(height: 32),
+        _buildStatsBar(),
+        const SizedBox(height: 40),
+        _buildSearchBar(),
+        const SizedBox(height: 32),
+        _buildFilters(),
+        const SizedBox(height: 48),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: filtered.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: MediaQuery.of(context).size.width < 800 ? 1 : (MediaQuery.of(context).size.width < 1200 ? 2 : 3),
+            crossAxisSpacing: 24,
+            mainAxisSpacing: 24,
+            childAspectRatio: 0.9,
           ),
-          if (filtered.isEmpty) const Padding(padding: EdgeInsets.only(top: 40), child: Text("No certifications match your search.", style: TextStyle(color: AppColors.textDim))),
-        ],
-      ),
+          itemBuilder: (context, i) => _buildCertCard(filtered[i]),
+        ),
+        if (filtered.isEmpty) const Padding(padding: EdgeInsets.only(top: 40), child: Text("No certifications match your search.", style: TextStyle(color: AppColors.textDim))),
+      ],
     );
   }
 
@@ -1402,11 +1359,11 @@ class _CertificationsSectionState extends State<CertificationsSection> {
         style: const TextStyle(fontSize: 16),
         decoration: InputDecoration(
           hintText: "Search by name, issuer, or skill...",
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.2)),
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.2)),
           prefixIcon: const Icon(Icons.search, color: AppColors.textDim),
-          filled: true, fillColor: Colors.white.withOpacity(0.04),
+          filled: true, fillColor: Colors.white.withValues(alpha: 0.04),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.c1)),
         ),
       ),
@@ -1443,7 +1400,7 @@ class _CertificationsSectionState extends State<CertificationsSection> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Icon(FontAwesomeIcons.award, color: c.color, size: 32),
-                    Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: c.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: c.color.withOpacity(0.3))), child: Text(c.category, style: TextStyle(color: c.color, fontSize: 10, fontWeight: FontWeight.bold))),
+                    Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: c.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: c.color.withValues(alpha: 0.3))), child: Text(c.category, style: TextStyle(color: c.color, fontSize: 10, fontWeight: FontWeight.bold))),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -1451,7 +1408,7 @@ class _CertificationsSectionState extends State<CertificationsSection> {
                 const SizedBox(height: 8),
                 Text(c.issuer, style: const TextStyle(color: AppColors.textDim, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 16),
-                Wrap(spacing: 6, runSpacing: 6, children: c.skills.map((s) => Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: c.color.withOpacity(0.08), borderRadius: BorderRadius.circular(6), border: Border.all(color: c.color.withOpacity(0.2))), child: Text(s, style: TextStyle(color: c.color, fontSize: 10, fontWeight: FontWeight.bold)))).toList()),
+                Wrap(spacing: 6, runSpacing: 6, children: c.skills.map((s) => Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: c.color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6), border: Border.all(color: c.color.withValues(alpha: 0.2))), child: Text(s, style: TextStyle(color: c.color, fontSize: 10, fontWeight: FontWeight.bold)))).toList()),
                 const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1472,12 +1429,13 @@ class _CertificationsSectionState extends State<CertificationsSection> {
 // --- Why Me Section ---
 
 class WhyMeSection extends StatelessWidget {
-  const WhyMeSection({Key? key}) : super(key: key);
+  const WhyMeSection({super.key}) ;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final isTablet = screenWidth < 1200;
 
     return Column(
       children: [
@@ -1485,21 +1443,20 @@ class WhyMeSection extends StatelessWidget {
           title: 'Why Work With Me?',
           subtitle: 'I bring more than just code — I bring commitment, craftsmanship, and a genuine passion for building things that matter.',
         ),
-          const SizedBox(height: 64),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: ContentData.whyMeFeatures.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isMobile ? 1 : (isTablet ? 2 : 4),
-              mainAxisSpacing: 24,
-              crossAxisSpacing: 24,
-              childAspectRatio: isMobile ? 1.6 : 1.1,
-            ),
-            itemBuilder: (context, index) => _buildFeatureCard(ContentData.whyMeFeatures[index]),
+        const SizedBox(height: 64),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: ContentData.whyMeFeatures.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isMobile ? 1 : (isTablet ? 2 : 3),
+            mainAxisSpacing: 24,
+            crossAxisSpacing: 24,
+            childAspectRatio: isMobile ? 1.6 : 1.1,
           ),
-        ],
-      ),
+          itemBuilder: (context, index) => _buildFeatureCard(ContentData.whyMeFeatures[index]),
+        ),
+      ],
     );
   }
 
@@ -1517,7 +1474,7 @@ class WhyMeSection extends StatelessWidget {
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: f.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: f.color.withOpacity(0.3))),
+                  decoration: BoxDecoration(color: f.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: f.color.withValues(alpha: 0.3))),
                   child: Text(f.tag, style: TextStyle(color: f.color, fontSize: 10, fontWeight: FontWeight.bold)),
                 ),
               ],
@@ -1538,7 +1495,7 @@ class WhyMeSection extends StatelessWidget {
 // --- Blog Section ---
 
 class BlogSection extends StatelessWidget {
-  const BlogSection({Key? key}) : super(key: key);
+  const BlogSection({super.key}) ;
 
   @override
   Widget build(BuildContext context) {
@@ -1579,7 +1536,7 @@ class BlogSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: a.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Text(a.tag, style: TextStyle(color: a.color, fontSize: 10, fontWeight: FontWeight.bold))),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: a.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: Text(a.tag, style: TextStyle(color: a.color, fontSize: 10, fontWeight: FontWeight.bold))),
                 const SizedBox(height: 20),
                 Text(a.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 12),
@@ -1611,7 +1568,7 @@ class BlogSection extends StatelessWidget {
 // --- Contact Section ---
 
 class ContactSection extends StatefulWidget {
-  const ContactSection({Key? key}) : super(key: key);
+  const ContactSection({super.key}) ;
   @override
   State<ContactSection> createState() => _ContactSectionState();
 }
@@ -1662,7 +1619,7 @@ class _ContactSectionState extends State<ContactSection> {
         const SizedBox(height: 24),
         const Text("Whether you have a project idea, a job opportunity, or just want to say hello — my inbox is always open. I'm especially interested in large-scale MERN or ASP.NET projects.", style: TextStyle(color: AppColors.textMuted, fontSize: 16, height: 1.8)),
         const SizedBox(height: 48),
-        ...socials.map((s) => _buildSocialRow(s)).toList(),
+        ...socials.map((s) => _buildSocialRow(s)),
         const SizedBox(height: 48),
         Row(children: [const Icon(FontAwesomeIcons.locationDot, size: 16, color: AppColors.c1), const SizedBox(width: 12), const Text("Sindh, Pakistan — Open to remote worldwide", style: TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold))]),
       ],
@@ -1722,9 +1679,9 @@ class _ContactSectionState extends State<ContactSection> {
           style: const TextStyle(fontSize: 16),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.15)),
-            filled: true, fillColor: Colors.white.withOpacity(0.03),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.15)),
+            filled: true, fillColor: Colors.white.withValues(alpha: 0.03),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.c1, width: 2)),
             contentPadding: const EdgeInsets.all(20),
           ),
@@ -1740,7 +1697,7 @@ class _ContactSectionState extends State<ContactSection> {
       decoration: BoxDecoration(
         gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: AppColors.c1.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8))],
+        boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8))],
       ),
       child: ElevatedButton(
         onPressed: () {
@@ -1763,7 +1720,7 @@ class _ContactSectionState extends State<ContactSection> {
 // --- Footer Section ---
 
 class FooterSection extends StatelessWidget {
-  const FooterSection({Key? key}) : super(key: key);
+  const FooterSection({super.key}) ;
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
