@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -347,9 +348,10 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     return Positioned.fill(
       child: Stack(
         children: [
-          _buildOrb(AppColors.c2.withValues(alpha: isDark ? 0.3 : 0.15), top: -100, right: -100, size: 600),
-          _buildOrb(AppColors.c1.withValues(alpha: isDark ? 0.3 : 0.15), bottom: -100, left: -100, size: 500),
-          _buildOrb(AppColors.c3.withValues(alpha: isDark ? 0.2 : 0.1), top: 200, left: 100, size: 350),
+          _buildOrb(AppColors.c2.withValues(alpha: isDark ? 0.3 : 0.1), top: -100, right: -100, size: 600),
+          _buildOrb(AppColors.c1.withValues(alpha: isDark ? 0.3 : 0.1), bottom: -100, left: -100, size: 500),
+          _buildOrb(AppColors.c3.withValues(alpha: isDark ? 0.2 : 0.08), top: 200, left: 100, size: 350),
+          _buildOrb(AppColors.c4.withValues(alpha: isDark ? 0.15 : 0.05), bottom: 100, right: 100, size: 400),
           Opacity(
             opacity: isDark ? 0.1 : 0.05,
             child: CustomPaint(
@@ -446,82 +448,109 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
           children: [
             Text(
               "I'm a ",
-              style: TextStyle(fontSize: isMobile ? 18 : 24, color: AppColors.textDim),
+              style: TextStyle(fontSize: isMobile ? 18 : 24, color: isDark ? AppColors.textDim : AppColors.textDimLight),
             ),
             Text(
               _displayedRole,
               style: TextStyle(
-                fontSize: isMobile ? 18 : 24,
-                fontWeight: FontWeight.w800,
-                color: AppColors.c3,
+                fontSize: isMobile ? 18 : 24, 
+                color: AppColors.c1, 
+                fontWeight: FontWeight.w900,
               ),
             ),
-            Container(
-              width: 2,
-              height: isMobile ? 22 : 28,
-              color: AppColors.c3,
-              margin: const EdgeInsets.only(left: 4),
-            ).animate(onPlay: (c) => c.repeat()).fadeOut(duration: 400.ms),
+            const TypingCursor(),
           ],
         ),
         const SizedBox(height: 32),
-        SizedBox(
-          width: 550,
-          child: Text(
-            "I engineer dynamic, user-friendly, and scalable web applications. Specialising in MERN, ASP.NET Core, and Cloud-Native architectures.",
-            textAlign: isMobile ? TextAlign.center : TextAlign.start,
-            style: TextStyle(
-              fontSize: isMobile ? 14 : 17, 
-              color: AppColors.textMuted, 
-              height: 1.8
-            ),
+        Text(
+          "I engineer dynamic, user-friendly, and scalable web applications. Passionate about the MERN stack, ASP.NET Core, cloud computing, and building seamless digital experiences.",
+          textAlign: isMobile ? TextAlign.center : TextAlign.start,
+          style: TextStyle(
+            fontSize: isMobile ? 15 : 18, 
+            color: isDark ? AppColors.textMuted : AppColors.textMutedLight, 
+            height: 1.6, 
           ),
-        ),
+        ).animate().fadeIn(delay: 500.ms),
         const SizedBox(height: 48),
-        _buildActions(isMobile),
-        const SizedBox(height: 40),
+        _buildStats(isMobile),
+        const SizedBox(height: 48),
+        _buildActionBtns(isMobile),
+        const SizedBox(height: 48),
         _buildSocials(isMobile),
       ],
     ).animate().fadeIn(duration: 800.ms, curve: Curves.easeOut).slideY(begin: 0.1, end: 0);
   }
 
-  Widget _buildOrbitalImage(double maxWidth, bool isMobile) {
-    final size = (maxWidth > 600 ? 500 : maxWidth * 0.9).toDouble();
-    return Center(
-      child: SizedBox(
+  Widget _buildStats(bool isMobile) {
+    return Wrap(
+      spacing: 40,
+      runSpacing: 20,
+      alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+      children: ContentData.stats.map((s) => Column(
+        crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        children: [
+          Text(s.num, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.c1)),
+          Text(s.label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDim)),
+        ],
+      )).toList(),
+    );
+  }
+
+  Widget _buildActionBtns(bool isMobile) {
+    return Wrap(
+      spacing: 20,
+      runSpacing: 20,
+      alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+      children: [
+        _buildHeroBtn("Hire Me", icon: FontAwesomeIcons.envelope, isPrimary: true),
+        _buildHeroBtn("Download CV", icon: FontAwesomeIcons.download, isPrimary: false),
+      ],
+    );
+  }
+
+  Widget _buildHeroBtn(String text, {required IconData icon, required bool isPrimary}) {
+    return Container(
+      decoration: isPrimary ? BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(colors: AppColors.primaryGradient),
+        boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
+      ) : null,
+      child: ElevatedButton.icon(
+        onPressed: () {},
+        icon: Icon(icon, size: 16, color: isPrimary ? Colors.white : AppColors.c1),
+        label: Text(text, style: TextStyle(color: isPrimary ? Colors.white : AppColors.c1, fontWeight: FontWeight.bold)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isPrimary ? Colors.transparent : Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: isPrimary ? BorderSide.none : const BorderSide(color: AppColors.c1, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrbitalImage(double screenWidth, bool isMobile) {
+    final size = isMobile ? (screenWidth < 400 ? 280.0 : 350.0) : 480.0;
+    return MouseRegion(
+      onHover: (e) {
+      },
+      child: Container(
         width: size,
         height: size,
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Background Glows
-            _buildOrb(AppColors.c1.withValues(alpha: 0.1), size: size * 0.8),
-            _buildOrb(AppColors.c2.withValues(alpha: 0.05), size: size * 0.6, right: 0),
-
-            // Orbiting Badges
             ..._buildFloatingBadges(size),
-
-            // Triple Rings
+            _buildAnimatedRing(size * 0.9, color: AppColors.c1.withValues(alpha: 0.1), duration: 2.seconds),
+            _buildAnimatedRing(size * 0.85, color: AppColors.c2.withValues(alpha: 0.15), duration: 3.seconds),
             Container(
-              width: size * 0.85,
-              height: size * 0.85,
-              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.c1.withValues(alpha: 0.2), width: 1.5, style: BorderStyle.solid)),
-            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 12.seconds),
-
-            // Sweep Gradient Ring
-            Container(
-              width: size * 0.75,
-              height: size * 0.75,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: SweepGradient(
-                  colors: [AppColors.c1.withValues(alpha: 0), AppColors.c1.withValues(alpha: 0.4), AppColors.c1.withValues(alpha: 0)],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-              ),
-            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 8.seconds),
-
-            // Main Image
+              width: size * 0.8,
+              height: size * 0.8,
+              child: CustomPaint(painter: DashedRingPainter(color: AppColors.border.withValues(alpha: 0.3))),
+            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 20.seconds),
             Container(
               width: size * 0.6,
               height: size * 0.6,
@@ -529,8 +558,8 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.c2, width: 2),
                 boxShadow: [
-                  BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 40),
-                  BoxShadow(color: AppColors.c2.withValues(alpha: 0.15), blurRadius: 80),
+                  BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 40, spreadRadius: 5),
+                  BoxShadow(color: AppColors.c2.withValues(alpha: 0.1), blurRadius: 80),
                 ],
               ),
               child: ClipOval(
@@ -543,15 +572,26 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     );
   }
 
+  Widget _buildAnimatedRing(double size, {required Color color, required Duration duration}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 1.5),
+      ),
+    ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(begin: const Offset(0.95, 0.95), end: const Offset(1.05, 1.05), duration: duration, curve: Curves.easeInOut);
+  }
+
   List<Widget> _buildFloatingBadges(double containerSize) {
     final badges = [
       {'text': 'React.js', 'icon': FontAwesomeIcons.react, 'color': const Color(0xFF61DAFB), 'top': 0.05, 'left': 0.15, 'dur': 3.0},
       {'text': 'Node.js', 'icon': FontAwesomeIcons.nodeJs, 'color': const Color(0xFF339933), 'top': 0.15, 'left': 0.85, 'dur': 3.8},
-      {'text': 'MongoDB', 'icon': FontAwesomeIcons.database, 'color': const Color(0xFF47A248), 'top': 0.45, 'left': 0.92, 'dur': 4.2},
-      {'text': 'Docker', 'icon': FontAwesomeIcons.docker, 'color': const Color(0xFF2496ED), 'top': 0.80, 'left': 0.80, 'dur': 3.5},
-      {'text': 'AWS', 'icon': FontAwesomeIcons.aws, 'color': const Color(0xFFFF9900), 'top': 0.90, 'left': 0.50, 'dur': 4.5},
-      {'text': 'C#', 'icon': FontAwesomeIcons.code, 'color': const Color(0xFF512BD4), 'top': 0.85, 'left': 0.15, 'dur': 3.2},
-      {'text': 'GitHub', 'icon': FontAwesomeIcons.github, 'color': Colors.white, 'top': 0.60, 'left': 0.05, 'dur': 4.0},
+      {'text': 'AWS', 'icon': FontAwesomeIcons.aws, 'color': const Color(0xFFFF9900), 'top': 0.85, 'left': 0.85, 'dur': 3.3},
+      {'text': 'TypeScript', 'icon': FontAwesomeIcons.code, 'color': const Color(0xFF3178C6), 'top': 0.50, 'left': 0.95, 'dur': 3.5},
+      {'text': 'C# / .NET', 'icon': FontAwesomeIcons.microsoft, 'color': const Color(0xFF00A4EF), 'top': 0.95, 'left': 0.60, 'dur': 4.0},
+      {'text': 'Docker', 'icon': FontAwesomeIcons.docker, 'color': const Color(0xFF2496ED), 'top': 0.85, 'left': 0.15, 'dur': 3.6},
+      {'text': 'Python', 'icon': FontAwesomeIcons.python, 'color': const Color(0xFF3776AB), 'top': 0.60, 'left': 0.05, 'dur': 3.7},
     ];
 
     return badges.map((b) {
@@ -627,44 +667,6 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     );
   }
 
-
-  Widget _buildActions(bool isMobile) {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
-      alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
-      children: [
-        _buildButton("Hire Me", FontAwesomeIcons.envelope, isPrimary: true),
-        _buildButton("Download CV", FontAwesomeIcons.download, isPrimary: false),
-      ],
-    );
-  }
-
-  Widget _buildButton(String text, IconData icon, {required bool isPrimary}) {
-    return Container(
-      decoration: isPrimary ? BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]),
-        boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))],
-      ) : null,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          HapticFeedback.lightImpact();
-        },
-        icon: Icon(icon, size: 16, color: isPrimary ? Colors.white : AppColors.c1),
-        label: Text(text, style: TextStyle(color: isPrimary ? Colors.white : AppColors.c1)),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary ? Colors.transparent : AppColors.bgCard,
-          shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: isPrimary ? BorderSide.none : const BorderSide(color: AppColors.c1, width: 1.5),
-          ),
-        ),
-      ),
-    ).animate(onPlay: (c) => c.repeat()).shimmer(delay: 3.seconds, duration: 2.seconds);
-  }
 
   Widget _buildSocials(bool isMobile) {
     return Row(
@@ -2023,5 +2025,18 @@ class FooterSection extends StatelessWidget {
         )),
       ],
     );
+  }
+}
+
+class TypingCursor extends StatelessWidget {
+  const TypingCursor({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 2,
+      height: 24,
+      margin: const EdgeInsets.only(left: 4),
+      color: AppColors.c1,
+    ).animate(onPlay: (c) => c.repeat()).fadeOut(duration: 500.ms);
   }
 }
