@@ -167,20 +167,22 @@ class _ScrollAnimatedSectionState extends State<ScrollAnimatedSection> {
     return VisibilityDetector(
       key: UniqueKey(),
       onVisibilityChanged: (info) {
-        if (info.visibleFraction > 0.1 && !_isVisible) {
-          setState(() => _isVisible = true);
+        if (info.visibleFraction > 0.01 && !_isVisible) {
+          if (mounted) setState(() => _isVisible = true);
         }
       },
       child: widget.child.animate(target: _isVisible ? 1 : 0)
-          .fadeIn(duration: 800.ms, curve: Curves.easeOut)
-          .slideY(begin: 0.1, end: 0, duration: 800.ms, curve: Curves.easeOutCubic),
+          .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1), duration: 800.ms, curve: Curves.easeOutBack)
+          .slideY(begin: 0.05, end: 0, duration: 800.ms, curve: const Cubic(0.4, 0, 0.2, 1)),
     );
   }
 }
 
+
+
 class GlassCard extends StatelessWidget {
   final Widget child;
-  final double blur;
+  final double? blur;
   final double opacity;
   final Color? color;
   final BorderRadius? borderRadius;
@@ -189,7 +191,7 @@ class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
     required this.child,
-    this.blur = 24,
+    this.blur,
     this.opacity = 0.04,
     this.color,
     this.borderRadius,
@@ -199,22 +201,25 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    final effectiveBlur = blur ?? (isMobile ? 8.0 : 16.0);
+
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.circular(20),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+        filter: ImageFilter.blur(sigmaX: effectiveBlur, sigmaY: effectiveBlur),
         child: Container(
           decoration: BoxDecoration(
             color: color ?? (isDark 
                 ? Colors.white.withValues(alpha: opacity) 
-                : Colors.white.withValues(alpha: 0.6)),
+                : Colors.white.withValues(alpha: isMobile ? 0.8 : 0.6)),
             borderRadius: borderRadius ?? BorderRadius.circular(20),
             border: border ?? Border.all(
               color: isDark 
                   ? Colors.white.withValues(alpha: 0.08) 
                   : AppColors.borderLight.withValues(alpha: 0.5)
             ),
-            boxShadow: isDark ? [] : [
+            boxShadow: (isDark || isMobile) ? [] : [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.03), 
                 blurRadius: 20, 
@@ -413,8 +418,6 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
 
   Widget _buildTextContent(bool isMobile) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final titleSize = isMobile ? (screenWidth < 400 ? 42.0 : 56.0) : 72.0;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -425,22 +428,31 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
         Text(
           "Hi, I'm",
           style: TextStyle(
-            fontSize: isMobile ? 18 : 24, 
+            fontSize: isMobile ? 20 : 28, 
             fontWeight: FontWeight.w600, 
-            color: isDark ? AppColors.textMuted : AppColors.textMutedLight
+            color: isDark ? AppColors.textMuted : AppColors.textMutedLight,
+            letterSpacing: 0.5,
           ),
         ),
-        Text(
-          "Farmanullah Ansari",
-          textAlign: isMobile ? TextAlign.center : TextAlign.start,
-          style: TextStyle(
-            fontSize: titleSize,
-            fontWeight: FontWeight.w900,
-            height: 1.1,
-            letterSpacing: -2,
-            color: isDark ? Colors.white : AppColors.textLight,
+        const SizedBox(height: 8),
+        ShaderMask(
+          shaderCallback: (bounds) => const LinearGradient(
+            colors: [AppColors.c1, AppColors.c2, AppColors.c3, AppColors.c4, AppColors.c1],
+            stops: [0.0, 0.25, 0.5, 0.75, 1.0],
+          ).createShader(bounds),
+          child: Text(
+            "Farmanullah Ansari",
+            textAlign: isMobile ? TextAlign.center : TextAlign.start,
+            style: TextStyle(
+              fontSize: isMobile ? 48 : 88,
+              fontWeight: FontWeight.w900,
+              height: 1.0,
+              letterSpacing: -3,
+              color: Colors.white,
+            ),
           ),
-        ).animate().shimmer(duration: 3.seconds, color: AppColors.c1),
+        ).animate(onPlay: (controller) => controller.repeat())
+         .shimmer(duration: 5.seconds, color: Colors.white.withValues(alpha: 0.2)),
         const SizedBox(height: 20),
         Wrap(
           alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
@@ -534,39 +546,41 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
 
   Widget _buildOrbitalImage(double screenWidth, bool isMobile) {
     final size = isMobile ? (screenWidth < 400 ? 280.0 : 350.0) : 480.0;
-    return MouseRegion(
-      onHover: (e) {
-      },
-      child: Container(
-        width: size,
-        height: size,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ..._buildFloatingBadges(size),
-            _buildAnimatedRing(size * 0.9, color: AppColors.c1.withValues(alpha: 0.1), duration: 2.seconds),
-            _buildAnimatedRing(size * 0.85, color: AppColors.c2.withValues(alpha: 0.15), duration: 3.seconds),
-            Container(
-              width: size * 0.8,
-              height: size * 0.8,
-              child: CustomPaint(painter: DashedRingPainter(color: AppColors.border.withValues(alpha: 0.3))),
-            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 20.seconds),
-            Container(
-              width: size * 0.6,
-              height: size * 0.6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.c2, width: 2),
-                boxShadow: [
-                  BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 40, spreadRadius: 5),
-                  BoxShadow(color: AppColors.c2.withValues(alpha: 0.1), blurRadius: 80),
-                ],
+    return RepaintBoundary(
+      child: MouseRegion(
+        onHover: (e) {
+        },
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ..._buildFloatingBadges(size),
+              _buildAnimatedRing(size * 0.9, color: AppColors.c1.withValues(alpha: 0.1), duration: 2.seconds),
+              _buildAnimatedRing(size * 0.85, color: AppColors.c2.withValues(alpha: 0.15), duration: 3.seconds),
+              SizedBox(
+                width: size * 0.8,
+                height: size * 0.8,
+                child: CustomPaint(painter: DashedRingPainter(color: AppColors.border.withValues(alpha: 0.3))),
+              ).animate(onPlay: (c) => c.repeat()).rotate(duration: 20.seconds),
+              Container(
+                width: size * 0.6,
+                height: size * 0.6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.c2, width: 2),
+                  boxShadow: [
+                    BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 40, spreadRadius: 5),
+                    BoxShadow(color: AppColors.c2.withValues(alpha: 0.1), blurRadius: 80),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Image.asset('assets/profile2.webp', fit: BoxFit.cover),
+                ),
               ),
-              child: ClipOval(
-                child: Image.asset('assets/profile2.webp', fit: BoxFit.cover),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -759,7 +773,7 @@ class DashedRingPainter extends CustomPainter {
     const double dashWidth = 10, dashSpace = 6;
     double currentAngle = 0;
     final double radius = size.width / 2;
-    while (currentAngle < 2 * 3.14159) {
+    while (currentAngle < 2 * math.pi) {
       canvas.drawArc(Rect.fromCircle(center: Offset(radius, radius), radius: radius), currentAngle, dashWidth / radius, false, paint);
       currentAngle += (dashWidth + dashSpace) / radius;
     }
@@ -787,7 +801,7 @@ class AboutSection extends StatelessWidget {
           if (isMobile)
             Column(
               children: [
-                _buildAboutText(context),
+                _buildAboutText(context, true),
                 const SizedBox(height: 60),
                 _buildHighlights(screenWidth, context)
               ],
@@ -796,7 +810,7 @@ class AboutSection extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(flex: 1, child: _buildAboutText(context)),
+                Expanded(flex: 1, child: _buildAboutText(context, false)),
                 const SizedBox(width: 80),
                 Expanded(flex: 1, child: _buildHighlights(screenWidth, context)),
               ],
@@ -806,7 +820,7 @@ class AboutSection extends StatelessWidget {
     );
   }
 
-  Widget _buildAboutText(BuildContext context) {
+  Widget _buildAboutText(BuildContext context, bool isMobile) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? AppColors.textMuted : AppColors.textMutedLight;
 
@@ -828,37 +842,21 @@ class AboutSection extends StatelessWidget {
           "When I'm not coding, I'm exploring new cloud technologies, contributing to open-source projects, or writing technical articles to share knowledge with the community.",
           style: TextStyle(fontSize: 18, height: 1.8, color: textColor),
         ),
-        const SizedBox(height: 40),
-        Row(
+        const SizedBox(height: 48),
+        isMobile ? Column(
           children: [
-            _buildActionBtn("Download CV", isPrimary: true),
+            PremiumButton(label: "Download CV", icon: FontAwesomeIcons.download, isPrimary: true),
+            const SizedBox(height: 16),
+            PremiumButton(label: "Contact Me", icon: FontAwesomeIcons.paperPlane, isPrimary: false),
+          ],
+        ) : Row(
+          children: [
+            PremiumButton(label: "Download CV", icon: FontAwesomeIcons.download, isPrimary: true),
             const SizedBox(width: 20),
-            _buildActionBtn("Hire Me", isPrimary: false),
+            PremiumButton(label: "Contact Me", icon: FontAwesomeIcons.paperPlane, isPrimary: false),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildActionBtn(String text, {required bool isPrimary}) {
-    return Container(
-      decoration: isPrimary ? BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: const LinearGradient(colors: AppColors.primaryGradient),
-      ) : null,
-      child: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary ? Colors.transparent : Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: isPrimary ? BorderSide.none : const BorderSide(color: AppColors.c1, width: 1.5),
-          ),
-        ),
-        child: Text(text, style: TextStyle(color: isPrimary ? Colors.white : AppColors.c1, fontWeight: FontWeight.bold)),
-      ),
     );
   }
 
@@ -946,7 +944,7 @@ class _SkillsSectionState extends State<SkillsSection> {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
-        duration: 30.seconds,
+        duration: 90.seconds,
         curve: Curves.linear,
       ).then((_) {
         if (mounted) {
@@ -998,45 +996,58 @@ class _SkillsSectionState extends State<SkillsSection> {
 
   Widget _buildMarquee(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return SizedBox(
-      height: 120,
-      width: double.infinity,
-      child: ListView.builder(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        itemCount: 1000, // Large number for infinite-like feel
-        itemBuilder: (context, index) {
-          final item = ContentData.marquee[index % ContentData.marquee.length];
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)),
-                  ),
-                  child: Center(
-                    child: Icon(item.icon, color: AppColors.c1, size: 28),
-                  ),
+    return RepaintBoundary(
+      child: SizedBox(
+        height: 120,
+        width: double.infinity,
+        child: ShaderMask(
+          shaderCallback: (rect) {
+            return const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Colors.transparent, Colors.black, Colors.black, Colors.transparent],
+              stops: [0.0, 0.1, 0.9, 1.0],
+            ).createShader(rect);
+          },
+          blendMode: BlendMode.dstIn,
+          child: ListView.builder(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: 1000,
+            itemBuilder: (context, index) {
+              final item = ContentData.marquee[index % ContentData.marquee.length];
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)),
+                      ),
+                      child: Center(
+                        child: Icon(item.icon, color: AppColors.c1, size: 28),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      item.name,
+                      style: TextStyle(
+                        fontSize: 12, 
+                        fontWeight: FontWeight.bold, 
+                        color: isDark ? AppColors.textDim : AppColors.textDimLight
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  item.name,
-                  style: TextStyle(
-                    fontSize: 12, 
-                    fontWeight: FontWeight.bold, 
-                    color: isDark ? AppColors.textDim : AppColors.textDimLight
-                  ),
-                ),
-              ],
-            ),
-          ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1));
-        },
+              ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1));
+            },
+          ),
+        ),
       ),
     );
   }
@@ -1102,25 +1113,58 @@ class _SkillsSectionState extends State<SkillsSection> {
 
   Widget _buildSkillBadge(BuildContext context, String name, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final icon = _getSkillIcon(name);
+    
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: color.withValues(alpha: isDark ? 0.08 : 0.12),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color.withValues(alpha: isDark ? 0.2 : 0.3), width: 0.5),
         ),
-        child: Text(
-          name,
-          style: TextStyle(
-            color: isDark ? Colors.white : AppColors.textLight,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              name,
+              style: TextStyle(
+                color: isDark ? Colors.white : AppColors.textLight,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  IconData? _getSkillIcon(String name) {
+    final n = name.toLowerCase();
+    if (n.contains('react')) return FontAwesomeIcons.react;
+    if (n.contains('node')) return FontAwesomeIcons.nodeJs;
+    if (n.contains('js') || n.contains('javascript')) return FontAwesomeIcons.js;
+    if (n.contains('python')) return FontAwesomeIcons.python;
+    if (n.contains('java')) return FontAwesomeIcons.java;
+    if (n.contains('aws')) return FontAwesomeIcons.aws;
+    if (n.contains('docker')) return FontAwesomeIcons.docker;
+    if (n.contains('git')) return FontAwesomeIcons.git;
+    if (n.contains('html')) return FontAwesomeIcons.html5;
+    if (n.contains('css')) return FontAwesomeIcons.css3;
+    if (n.contains('cloud') || n.contains('azure')) return FontAwesomeIcons.cloud;
+    if (n.contains('database') || n.contains('sql') || n.contains('mongo')) return FontAwesomeIcons.database;
+    if (n.contains('api') || n.contains('rest')) return FontAwesomeIcons.server;
+    if (n.contains('mobile') || n.contains('flutter')) return FontAwesomeIcons.mobileScreen;
+    if (n.contains('security')) return FontAwesomeIcons.shieldHalved;
+    if (n.contains('linux')) return FontAwesomeIcons.linux;
+    if (n.contains('windows')) return FontAwesomeIcons.microsoft;
+    return null;
   }
 }
 
@@ -1167,17 +1211,18 @@ class _ProjectsSectionState extends State<ProjectsSection> {
         ),
           if (_visibleCount < filtered.length) ...[
             const SizedBox(height: 64),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: () {
                 HapticFeedback.mediumImpact();
                 setState(() => _visibleCount += 8);
               },
+              icon: const Icon(FontAwesomeIcons.plus, size: 14),
+              label: const Text("More Projects", style: TextStyle(fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.bgCard,
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30), side: const BorderSide(color: AppColors.c1)),
               ),
-              child: const Text("More Projects", style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ],
@@ -1543,7 +1588,11 @@ class _CertificationsSectionState extends State<CertificationsSection> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(c.date, style: const TextStyle(color: AppColors.textMuted, fontSize: 12, fontFamily: 'Fira Code')),
-                    TextButton(onPressed: () => launchUrl(Uri.parse(c.link)), child: const Text("Show Credential →", style: TextStyle(fontWeight: FontWeight.bold))),
+                    TextButton.icon(
+                      onPressed: () => launchUrl(Uri.parse(c.link)), 
+                      icon: Icon(FontAwesomeIcons.arrowUpRightFromSquare, size: 12, color: c.color),
+                      label: Text("Show Credential", style: TextStyle(fontWeight: FontWeight.bold, color: c.color)),
+                    ),
                   ],
                 ),
               ],
@@ -1592,33 +1641,76 @@ class WhyMeSection extends StatelessWidget {
 
   Widget _buildFeatureCard(bool isDark, WhyMeFeature f) {
     return GlassCard(
-      opacity: 0.05,
+      opacity: isDark ? 0.05 : 0.08,
+      color: f.color.withValues(alpha: isDark ? 0.02 : 0.05),
+      border: Border.all(color: f.color.withValues(alpha: isDark ? 0.15 : 0.25), width: 1),
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(f.icon, color: f.color, size: 32),
-                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: f.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(f.icon, color: f.color, size: 24),
+                ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: f.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: f.color.withValues(alpha: 0.3))),
-                  child: Text(f.tag, style: TextStyle(color: f.color, fontSize: 10, fontWeight: FontWeight.bold)),
+                  decoration: BoxDecoration(
+                    color: f.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: f.color.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    f.tag.toUpperCase(),
+                    style: TextStyle(color: f.color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            Text(f.title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppColors.textLight)),
+            Text(
+              f.title, 
+              style: TextStyle(
+                fontSize: 20, 
+                fontWeight: FontWeight.w900, 
+                color: isDark ? Colors.white : AppColors.textLight,
+                letterSpacing: -0.5
+              )
+            ),
             const SizedBox(height: 12),
-            Expanded(child: Text(f.desc, style: TextStyle(color: isDark ? AppColors.textMuted : AppColors.textMutedLight, fontSize: 14, height: 1.6))),
+            Expanded(
+              child: Text(
+                f.desc, 
+                style: TextStyle(
+                  color: isDark ? AppColors.textMuted : AppColors.textMutedLight, 
+                  height: 1.6, 
+                  fontSize: 14
+                ),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             const SizedBox(height: 20),
-            Container(height: 3, width: 48, decoration: BoxDecoration(color: f.color, borderRadius: BorderRadius.circular(2))),
+            Container(
+              height: 2,
+              width: 40,
+              decoration: BoxDecoration(
+                color: f.color,
+                borderRadius: BorderRadius.circular(2),
+                boxShadow: [BoxShadow(color: f.color.withValues(alpha: 0.5), blurRadius: 4)],
+              ),
+            ),
           ],
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0);
   }
 }
 
@@ -1639,31 +1731,39 @@ class BlogSection extends StatelessWidget {
         children: [
           const SectionHeader(title: 'Insights & Articles'),
           const SizedBox(height: 64),
-          GridView.builder(
+          isMobile ? Column(
+            children: ContentData.articles.map((a) => Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: SizedBox(
+                height: 320,
+                child: _buildBlogCard(isDark, a, isMobile),
+              ),
+            )).toList(),
+          ) : GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: ContentData.articles.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isMobile ? 1 : 2,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
               crossAxisSpacing: 24,
               mainAxisSpacing: 24,
-              childAspectRatio: isMobile ? 1.4 : 1.6,
+              childAspectRatio: 1.6,
             ),
-            itemBuilder: (context, i) => _buildBlogCard(isDark, ContentData.articles[i]),
+            itemBuilder: (context, i) => _buildBlogCard(isDark, ContentData.articles[i], isMobile),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBlogCard(bool isDark, BlogArticle a) {
+  Widget _buildBlogCard(bool isDark, BlogArticle a, bool isMobile) {
     return GlassCard(
       opacity: 0.08,
       child: Stack(
         children: [
           Positioned(top: 0, left: 0, right: 0, child: Container(height: 4, color: a.color)),
           Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(isMobile ? 20 : 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1671,7 +1771,7 @@ class BlogSection extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text(a.title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppColors.textLight)),
                 const SizedBox(height: 12),
-                Text(a.desc, style: TextStyle(color: isDark ? AppColors.textMuted : AppColors.textMutedLight, fontSize: 15, height: 1.6), maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(a.desc, style: TextStyle(color: isDark ? AppColors.textMuted : AppColors.textMutedLight, fontSize: 14, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
                 const Spacer(),
                 Row(
                   children: [
@@ -1680,10 +1780,15 @@ class BlogSection extends StatelessWidget {
                     Text(a.readTime, style: const TextStyle(color: AppColors.textDim, fontSize: 12, fontWeight: FontWeight.bold)),
                     const Spacer(),
                     TextButton.icon(
-                      onPressed: () => launchUrl(Uri.parse(a.link)),
-                      icon: const Text("Read More"),
-                      label: const Icon(Icons.arrow_forward, size: 16),
-                      style: TextButton.styleFrom(foregroundColor: a.color, textStyle: const TextStyle(fontWeight: FontWeight.bold)),
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        launchUrl(Uri.parse(a.link));
+                      },
+                      icon: Text("Read More", style: TextStyle(fontWeight: FontWeight.w900, color: a.color)),
+                      label: Icon(FontAwesomeIcons.arrowRight, size: 14, color: a.color),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
                     ),
                   ],
                 ),
@@ -1773,6 +1878,20 @@ class _ContactSectionState extends State<ContactSection> {
         ),
         const SizedBox(height: 48),
         ...socials.map((s) => _buildSocialRow(s, isMobile)),
+        const SizedBox(height: 48),
+        isMobile ? Column(
+          children: [
+            PremiumButton(label: "Download CV", icon: FontAwesomeIcons.download, isPrimary: true),
+            const SizedBox(height: 16),
+            PremiumButton(label: "Contact Me", icon: FontAwesomeIcons.paperPlane, isPrimary: false),
+          ],
+        ) : Row(
+          children: [
+            PremiumButton(label: "Download CV", icon: FontAwesomeIcons.download, isPrimary: true),
+            const SizedBox(width: 20),
+            PremiumButton(label: "Contact Me", icon: FontAwesomeIcons.paperPlane, isPrimary: false),
+          ],
+        ),
         const SizedBox(height: 48),
         Row(
           mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
@@ -1910,7 +2029,14 @@ class _ContactSectionState extends State<ContactSection> {
           });
         },
         style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-        child: Text(_isSending ? "Sending..." : "Send Message", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(_isSending ? Icons.sync : FontAwesomeIcons.paperPlane, size: 18, color: Colors.white).animate(target: _isSending ? 1 : 0).rotate(duration: 1.seconds),
+            const SizedBox(width: 12),
+            Text(_isSending ? "Sending..." : "Send Message", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+          ],
+        ),
       ),
     );
   }
@@ -2038,5 +2164,47 @@ class TypingCursor extends StatelessWidget {
       margin: const EdgeInsets.only(left: 4),
       color: AppColors.c1,
     ).animate(onPlay: (c) => c.repeat()).fadeOut(duration: 500.ms);
+  }
+}
+
+class PremiumButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isPrimary;
+  final VoidCallback? onPressed;
+
+  const PremiumButton({
+    super.key,
+    required this.label,
+    required this.icon,
+    this.isPrimary = true,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: isPrimary ? BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(colors: AppColors.primaryGradient),
+        boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))],
+      ) : null,
+      child: ElevatedButton.icon(
+        onPressed: onPressed ?? () {
+          HapticFeedback.lightImpact();
+        },
+        icon: Icon(icon, size: 16, color: isPrimary ? Colors.white : AppColors.c1),
+        label: Text(label, style: TextStyle(color: isPrimary ? Colors.white : AppColors.c1, fontWeight: FontWeight.bold)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isPrimary ? Colors.transparent : Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: isPrimary ? BorderSide.none : const BorderSide(color: AppColors.c1, width: 1.5),
+          ),
+        ),
+      ),
+    );
   }
 }

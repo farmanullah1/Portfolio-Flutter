@@ -128,22 +128,25 @@ class _HomePageState extends State<HomePage> {
       endDrawer: _buildDrawer(context, colorScheme),
       body: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              SectionWrapper(key: _homeKey, hasBorder: false, topPadding: 0, bottomPadding: 0, glowColors: const [AppColors.c1, AppColors.c3], child: const HeroSection()),
-              SectionWrapper(key: _aboutKey, glowColors: const [AppColors.c2, AppColors.c4], child: const AboutSection()),
-              SectionWrapper(key: _skillsKey, glowColors: const [AppColors.c3, AppColors.c1], child: const SkillsSection()),
-              SectionWrapper(key: _projectsKey, glowColors: const [AppColors.c6, AppColors.c2], child: const ProjectsSection()),
-              SectionWrapper(key: _experienceKey, glowColors: const [AppColors.c5, AppColors.c1], child: const ExperienceSection()),
-              SectionWrapper(key: _certificationsKey, glowColors: const [AppColors.c4, AppColors.c7], child: const CertificationsSection()),
-              SectionWrapper(key: _whyMeKey, glowColors: const [AppColors.c1, AppColors.c6], child: const WhyMeSection()),
-              SectionWrapper(key: _blogKey, glowColors: const [AppColors.c3, AppColors.c5], child: const BlogSection()),
-              SectionWrapper(key: _contactKey, hasBorder: false, glowColors: const [AppColors.c1, AppColors.c2], child: const ContactSection()),
-              const FooterSection(),
-            ],
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                RepaintBoundary(child: SectionWrapper(key: _homeKey, hasBorder: false, topPadding: 0, bottomPadding: 0, glowColors: const [AppColors.c1, AppColors.c3], child: const HeroSection())),
+                RepaintBoundary(child: SectionWrapper(key: _aboutKey, glowColors: const [AppColors.c2, AppColors.c4], child: const AboutSection())),
+                RepaintBoundary(child: SectionWrapper(key: _skillsKey, glowColors: const [AppColors.c3, AppColors.c1], child: const SkillsSection())),
+                RepaintBoundary(child: SectionWrapper(key: _projectsKey, glowColors: const [AppColors.c6, AppColors.c2], child: const ProjectsSection())),
+                RepaintBoundary(child: SectionWrapper(key: _experienceKey, glowColors: const [AppColors.c5, AppColors.c1], child: const ExperienceSection())),
+                RepaintBoundary(child: SectionWrapper(key: _certificationsKey, glowColors: const [AppColors.c4, AppColors.c7], child: const CertificationsSection())),
+                RepaintBoundary(child: SectionWrapper(key: _whyMeKey, glowColors: const [AppColors.c1, AppColors.c6], child: const WhyMeSection())),
+                RepaintBoundary(child: SectionWrapper(key: _blogKey, glowColors: const [AppColors.c3, AppColors.c5], child: const BlogSection())),
+                RepaintBoundary(child: SectionWrapper(key: _contactKey, hasBorder: false, glowColors: const [AppColors.c1, AppColors.c2], child: const ContactSection())),
+                const FooterSection(),
+              ],
+            ),
           ),
         ),
       ),
@@ -157,16 +160,32 @@ class _HomePageState extends State<HomePage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                   child: FloatingActionButton(
                     mini: true,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                    elevation: 0,
-                    child: const Icon(Icons.arrow_upward, color: Colors.white, size: 20),
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       _scrollTo(_homeKey);
                     },
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.15),
+                            Colors.white.withValues(alpha: 0.05),
+                          ],
+                        ),
+                      ),
+                      child: const Icon(FontAwesomeIcons.chevronUp, color: Colors.white, size: 14),
+                    ),
                   ),
                 ),
               ),
