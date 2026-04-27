@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'theme.dart';
 import 'sections.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,6 +14,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
+  double _scrollProgress = 0.0;
 
   final GlobalKey _homeKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
@@ -22,6 +22,8 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey _projectsKey = GlobalKey();
   final GlobalKey _experienceKey = GlobalKey();
   final GlobalKey _certificationsKey = GlobalKey();
+  final GlobalKey _whyMeKey = GlobalKey();
+  final GlobalKey _blogKey = GlobalKey();
   final GlobalKey _contactKey = GlobalKey();
 
   @override
@@ -31,10 +33,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onScroll() {
-    if (_scrollController.offset > 50 && !_isScrolled) {
-      setState(() => _isScrolled = true);
-    } else if (_scrollController.offset <= 50 && _isScrolled) {
-      setState(() => _isScrolled = false);
+    if (_scrollController.hasClients) {
+      setState(() {
+        _isScrolled = _scrollController.offset > 50;
+        _scrollProgress = (_scrollController.offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
+      });
     }
   }
 
@@ -55,31 +58,46 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: _isScrolled
-            ? colorScheme.surface.withOpacity(0.85)
-            : Colors.transparent,
-        elevation: _isScrolled ? 4 : 0,
-        title: Text(
-          'Farmanullah.',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(themeProvider.isDark ? FontAwesomeIcons.sun : FontAwesomeIcons.moon),
-            onPressed: () => themeProvider.toggleTheme(),
-            color: colorScheme.onSurface,
-          ),
-          Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.menu, color: colorScheme.onSurface),
-              onPressed: () => Scaffold.of(context).openEndDrawer(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Column(
+          children: [
+            AppBar(
+              backgroundColor: _isScrolled
+                  ? colorScheme.surface.withOpacity(0.85)
+                  : Colors.transparent,
+              elevation: 0,
+              centerTitle: false,
+              title: Text(
+                'Farmanullah.',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(themeProvider.isDark ? FontAwesomeIcons.sun : FontAwesomeIcons.moon, size: 18),
+                  onPressed: () => themeProvider.toggleTheme(),
+                  color: colorScheme.onSurface,
+                ),
+                Builder(
+                  builder: (context) => IconButton(
+                    icon: Icon(Icons.menu, color: colorScheme.onSurface),
+                    onPressed: () => Scaffold.of(context).openEndDrawer(),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            if (_isScrolled)
+              LinearProgressIndicator(
+                value: _scrollProgress,
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                minHeight: 2,
+              ),
+          ],
+        ),
       ),
       endDrawer: Drawer(
         child: Container(
@@ -100,6 +118,8 @@ class _HomePageState extends State<HomePage> {
               _buildDrawerItem('Projects', _projectsKey),
               _buildDrawerItem('Experience', _experienceKey),
               _buildDrawerItem('Certifications', _certificationsKey),
+              _buildDrawerItem('Why Work With Me?', _whyMeKey),
+              _buildDrawerItem('Insights & Blog', _blogKey),
               _buildDrawerItem('Contact', _contactKey),
             ],
           ),
@@ -115,11 +135,21 @@ class _HomePageState extends State<HomePage> {
             Container(key: _projectsKey, child: const ProjectsSection()),
             Container(key: _experienceKey, child: const ExperienceSection()),
             Container(key: _certificationsKey, child: const CertificationsSection()),
+            Container(key: _whyMeKey, child: const WhyMeSection()),
+            Container(key: _blogKey, child: const BlogSection()),
             Container(key: _contactKey, child: const ContactSection()),
             const FooterSection(),
           ],
         ),
       ),
+      floatingActionButton: _isScrolled
+          ? FloatingActionButton(
+              mini: true,
+              backgroundColor: colorScheme.primary,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+              onPressed: () => _scrollTo(_homeKey),
+            )
+          : null,
     );
   }
 
@@ -127,7 +157,7 @@ class _HomePageState extends State<HomePage> {
     return ListTile(
       title: Text(title),
       onTap: () {
-        Navigator.pop(context); // Close drawer
+        Navigator.pop(context);
         _scrollTo(key);
       },
     );

@@ -5,82 +5,173 @@ import 'package:url_launcher/url_launcher.dart';
 import 'models.dart';
 
 // --- Hero Section ---
-class HeroSection extends StatelessWidget {
+class HeroSection extends StatefulWidget {
   const HeroSection({Key? key}) : super(key: key);
+
+  @override
+  State<HeroSection> createState() => _HeroSectionState();
+}
+
+class _HeroSectionState extends State<HeroSection> {
+  static const List<String> _roles = [
+    'Full-Stack Developer',
+    'MERN Stack Engineer',
+    'ASP.NET Core Developer',
+    'Cloud & DevOps Enthusiast',
+    'TypeScript Developer',
+    'Software Engineer',
+  ];
+
+  int _roleIndex = 0;
+  String _currentText = '';
+  bool _isDeleting = false;
+  late Duration _typingSpeed;
+
+  @override
+  void initState() {
+    super.initState();
+    _typingSpeed = const Duration(milliseconds: 100);
+    _type();
+  }
+
+  void _type() {
+    if (!mounted) return;
+
+    final fullText = _roles[_roleIndex];
+
+    setState(() {
+      if (_isDeleting) {
+        _currentText = fullText.substring(0, _currentText.length - 1);
+        _typingSpeed = const Duration(milliseconds: 50);
+      } else {
+        _currentText = fullText.substring(0, _currentText.length + 1);
+        _typingSpeed = const Duration(milliseconds: 100);
+      }
+    });
+
+    if (!_isDeleting && _currentText == fullText) {
+      _typingSpeed = const Duration(milliseconds: 2000);
+      _isDeleting = true;
+    } else if (_isDeleting && _currentText == '') {
+      _isDeleting = false;
+      _roleIndex = (_roleIndex + 1) % _roles.length;
+      _typingSpeed = const Duration(milliseconds: 500);
+    }
+
+    Future.delayed(_typingSpeed, _type);
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       constraints: BoxConstraints(minHeight: screenHeight),
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 80.0),
       alignment: Alignment.center,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8, height: 8,
-                  decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+          // Profile Image
+          Center(
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: colorScheme.primary, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.primary.withOpacity(0.3),
+                    blurRadius: 30,
+                    spreadRadius: 10,
+                  )
+                ],
+                image: const DecorationImage(
+                  image: AssetImage('assets/profile2.webp'),
+                  fit: BoxFit.cover,
                 ),
-                const SizedBox(width: 8),
-                Text('Available for new opportunities', 
-                  style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12)),
-              ],
-            ),
-          ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.5, end: 0),
-          const SizedBox(height: 24),
-          const Text('Hi, I\'m', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w300))
-              .animate().fadeIn(delay: 200.ms),
-          const Text('Farmanullah Ansari', 
-            style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, height: 1.1))
-              .animate().fadeIn(delay: 400.ms).slideY(),
-          const SizedBox(height: 16),
-          const Text('Full-Stack Software Engineer', 
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: Colors.grey))
-              .animate().fadeIn(delay: 600.ms),
-          const SizedBox(height: 24),
-          const Text(
-            'I engineer dynamic, user-friendly, and scalable web applications. Passionate about the MERN stack, ASP.NET Core, cloud computing, and building seamless digital experiences.',
-            style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey),
-          ).animate().fadeIn(delay: 800.ms),
+              ),
+            ).animate().scale(duration: 800.ms, curve: Curves.elasticOut),
+          ),
           const SizedBox(height: 40),
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ElevatedButton.icon(
-                onPressed: () {}, 
-                icon: const Icon(Icons.mail), 
-                label: const Text('Hire Me'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: colorScheme.primary.withOpacity(0.3)),
                 ),
-              ),
-              OutlinedButton.icon(
-                onPressed: () {}, 
-                icon: const Icon(Icons.download), 
-                label: const Text('Download CV'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).primaryColor,
-                  side: BorderSide(color: Theme.of(context).primaryColor),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8, height: 8,
+                      decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('Available for new opportunities', 
+                      style: TextStyle(color: colorScheme.primary, fontSize: 12)),
+                  ],
                 ),
+              ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.5, end: 0),
+              const SizedBox(height: 24),
+              const Text('Hi, I\'m', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w300))
+                  .animate().fadeIn(delay: 200.ms),
+              Text('Farmanullah Ansari', 
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, height: 1.1, color: colorScheme.onBackground))
+                  .animate().fadeIn(delay: 400.ms).slideY(),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('I\'m a ', style: TextStyle(fontSize: 20, color: Colors.grey)),
+                  Text(_currentText, 
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                  const Text('|', style: TextStyle(fontSize: 20, color: Colors.grey)),
+                ],
               ),
+              const SizedBox(height: 24),
+              const Text(
+                'I engineer dynamic, user-friendly, and scalable web applications. Passionate about the MERN stack, ASP.NET Core, cloud computing, and building seamless digital experiences.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, height: 1.5, color: Colors.grey),
+              ).animate().fadeIn(delay: 800.ms),
+              const SizedBox(height: 40),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                runSpacing: 16,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {}, 
+                    icon: const Icon(Icons.mail), 
+                    label: const Text('Hire Me'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {}, 
+                    icon: const Icon(Icons.download), 
+                    label: const Text('Download CV'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorScheme.primary,
+                      side: BorderSide(color: colorScheme.primary),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                  ),
+                ],
+              ).animate().fadeIn(delay: 1000.ms),
             ],
-          ).animate().fadeIn(delay: 1000.ms),
+          ),
         ],
       ),
     );
@@ -425,6 +516,137 @@ class CertificationsSection extends StatelessWidget {
                         ],
                       ),
                     ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// --- Why Me Section ---
+class WhyMeSection extends StatelessWidget {
+  const WhyMeSection({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 80.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Why Work With Me?', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          const Text(
+            'I bring more than just code — I bring commitment, craftsmanship, and a genuine passion for building things that matter.',
+            style: TextStyle(color: Colors.grey, fontSize: 16),
+          ),
+          const SizedBox(height: 40),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: ContentData.whyMeFeatures.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 2 : 1,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1.8,
+            ),
+            itemBuilder: (context, index) {
+              final feature = ContentData.whyMeFeatures[index];
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(feature.icon, color: feature.color, size: 28),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: feature.color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(feature.tag, style: TextStyle(color: feature.color, fontSize: 10)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(feature.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    const SizedBox(height: 8),
+                    Expanded(child: Text(feature.desc, style: const TextStyle(color: Colors.grey, fontSize: 13, height: 1.4))),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// --- Blog Section ---
+class BlogSection extends StatelessWidget {
+  const BlogSection({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 80.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Insights & Articles', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 32),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: ContentData.articles.length,
+            itemBuilder: (context, index) {
+              final article = ContentData.articles[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border(top: BorderSide(color: article.color, width: 4)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: article.color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(article.tag, style: TextStyle(color: article.color, fontSize: 10, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(article.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(article.desc, style: const TextStyle(color: Colors.grey, height: 1.5)),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(article.readTime, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        const Spacer(),
+                        TextButton(onPressed: () {}, child: const Text('Read More →')),
+                      ],
+                    )
                   ],
                 ),
               );
