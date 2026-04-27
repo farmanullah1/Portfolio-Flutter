@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -52,6 +53,65 @@ class SectionHeader extends StatelessWidget {
           ).animate().fadeIn(delay: 200.ms),
         ],
       ],
+    );
+  }
+}
+
+class SectionWrapper extends StatelessWidget {
+  final Widget child;
+  final List<Color> glowColors;
+  final double topPadding;
+  final double bottomPadding;
+  final bool hasBorder;
+
+  const SectionWrapper({
+    Key? key,
+    required this.child,
+    this.glowColors = const [AppColors.c1, AppColors.c2],
+    this.topPadding = 100,
+    this.bottomPadding = 100,
+    this.hasBorder = true,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: hasBorder ? const Border(bottom: BorderSide(color: AppColors.border, width: 0.5)) : null,
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -250,
+            right: -250,
+            child: Container(
+              width: 600,
+              height: 600,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(colors: [glowColors[0].withOpacity(0.07), glowColors[0].withOpacity(0)]),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -250,
+            left: -250,
+            child: Container(
+              width: 600,
+              height: 600,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(colors: [glowColors[1].withOpacity(0.07), glowColors[1].withOpacity(0)]),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: topPadding, bottom: bottomPadding),
+            child: child,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -313,21 +373,126 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
           ],
         ),
         const SizedBox(height: 32),
-        const SizedBox(
-          width: 500,
+        SizedBox(
+          width: 550,
           child: Text(
-            "I engineer dynamic, user-friendly, and scalable web applications. Passionate about the MERN stack, ASP.NET Core, cloud computing, and building seamless digital experiences.",
-            style: TextStyle(fontSize: 16, color: AppColors.textMuted, height: 1.8),
+            "I engineer dynamic, user-friendly, and scalable web applications. Specialising in MERN, ASP.NET Core, and Cloud-Native architectures.",
+            style: TextStyle(fontSize: isMobile ? 15 : 17, color: AppColors.textMuted, height: 1.8),
           ),
         ),
         const SizedBox(height: 48),
-        _buildStats(),
-        const SizedBox(height: 48),
-        _buildActions(),
+        _buildActions(isMobile),
         const SizedBox(height: 40),
-        _buildSocials(),
+        _buildSocials(isMobile),
       ],
     ).animate().fadeIn(duration: 800.ms).slideX(begin: -0.1, end: 0);
+  }
+
+  Widget _buildOrbitalImage(double maxWidth, bool isMobile) {
+    final size = (maxWidth > 600 ? 500 : maxWidth * 0.9).toDouble();
+    return Center(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Background Glows
+            _buildOrb(AppColors.c1.withOpacity(0.1), size: size * 0.8),
+            _buildOrb(AppColors.c2.withOpacity(0.05), size: size * 0.6, right: 0),
+
+            // Orbiting Badges
+            ..._buildFloatingBadges(size),
+
+            // Triple Rings
+            Container(
+              width: size * 0.85,
+              height: size * 0.85,
+              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.c1.withOpacity(0.2), width: 1.5, style: BorderStyle.solid)),
+            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 12.seconds),
+
+            // Sweep Gradient Ring
+            Container(
+              width: size * 0.75,
+              height: size * 0.75,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: SweepGradient(
+                  colors: [AppColors.c1.withOpacity(0), AppColors.c1.withOpacity(0.4), AppColors.c1.withOpacity(0)],
+                  stops: const [0.0, 0.5, 1.0],
+                ),
+              ),
+            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 8.seconds),
+
+            // Main Image
+            Container(
+              width: size * 0.6,
+              height: size * 0.6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.c2, width: 2),
+                boxShadow: [
+                  BoxShadow(color: AppColors.c1.withOpacity(0.3), blurRadius: 40),
+                  BoxShadow(color: AppColors.c2.withOpacity(0.15), blurRadius: 80),
+                ],
+              ),
+              child: ClipOval(
+                child: Image.asset('assets/profile2.webp', fit: BoxFit.cover),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildFloatingBadges(double containerSize) {
+    final badges = [
+      {'text': 'React.js', 'icon': FontAwesomeIcons.react, 'color': const Color(0xFF61DAFB), 'top': 0.05, 'left': 0.15, 'dur': 3.0},
+      {'text': 'Node.js', 'icon': FontAwesomeIcons.nodeJs, 'color': const Color(0xFF339933), 'top': 0.15, 'left': 0.85, 'dur': 3.8},
+      {'text': 'MongoDB', 'icon': FontAwesomeIcons.database, 'color': const Color(0xFF47A248), 'top': 0.45, 'left': 0.92, 'dur': 4.2},
+      {'text': 'Docker', 'icon': FontAwesomeIcons.docker, 'color': const Color(0xFF2496ED), 'top': 0.80, 'left': 0.80, 'dur': 3.5},
+      {'text': 'AWS', 'icon': FontAwesomeIcons.aws, 'color': const Color(0xFFFF9900), 'top': 0.90, 'left': 0.50, 'dur': 4.5},
+      {'text': 'C#', 'icon': FontAwesomeIcons.code, 'color': const Color(0xFF512BD4), 'top': 0.85, 'left': 0.15, 'dur': 3.2},
+      {'text': 'GitHub', 'icon': FontAwesomeIcons.github, 'color': Colors.white, 'top': 0.60, 'left': 0.05, 'dur': 4.0},
+    ];
+
+    return badges.map((b) {
+      return Positioned(
+        top: containerSize * (b['top'] as double),
+        left: containerSize * (b['left'] as double),
+        child: _buildFloatingBadge(
+          b['text'] as String,
+          b['icon'] as IconData,
+          b['color'] as Color,
+          b['dur'] as double,
+          containerSize < 400, // isMini
+        ),
+      );
+    }).toList();
+  }
+
+  Widget _buildFloatingBadge(String text, IconData icon, Color color, double dur, bool isMini) {
+    return GlassCard(
+      blur: 15,
+      opacity: 0.85,
+      color: const Color(0xD10F0724),
+      borderRadius: BorderRadius.circular(30),
+      border: Border.all(color: color.withOpacity(0.3)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: isMini ? 8 : 12, vertical: isMini ? 4 : 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: isMini ? 10 : 12, color: color),
+            if (!isMini) ...[
+              const SizedBox(width: 6),
+              Text(text, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+            ],
+          ],
+        ),
+      ),
+    ).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(begin: -8, end: 8, duration: (dur * 1000).toInt().ms, curve: Curves.easeInOut);
   }
 
   Widget _buildBadge() {
@@ -407,10 +572,11 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildActions() {
+  Widget _buildActions(bool isMobile) {
     return Wrap(
       spacing: 16,
       runSpacing: 16,
+      alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
       children: [
         _buildButton("Hire Me", FontAwesomeIcons.envelope, isPrimary: true),
         _buildButton("Download CV", FontAwesomeIcons.download, isPrimary: false),
@@ -426,7 +592,9 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
         boxShadow: [BoxShadow(color: AppColors.c1.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5))],
       ) : null,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          HapticFeedback.lightImpact();
+        },
         icon: Icon(icon, size: 16, color: isPrimary ? Colors.white : AppColors.c1),
         label: Text(text, style: TextStyle(color: isPrimary ? Colors.white : AppColors.c1)),
         style: ElevatedButton.styleFrom(
@@ -442,8 +610,9 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     ).animate(onPlay: (c) => c.repeat()).shimmer(delay: 3.seconds, duration: 2.seconds);
   }
 
-  Widget _buildSocials() {
+  Widget _buildSocials(bool isMobile) {
     return Row(
+      mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
       children: [
         _buildSocialBtn(FontAwesomeIcons.github, "https://github.com/farmanullah1"),
         _buildSocialBtn(FontAwesomeIcons.linkedin, "https://linkedin.com/in/farmanullah-ansari"),
@@ -466,121 +635,6 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
         ),
       ),
     );
-  }
-
-  Widget _buildHeroImage() {
-    return Center(
-      child: SizedBox(
-        width: 500,
-        height: 500,
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            // Orbital Badges
-            ..._buildFloatingBadges(),
-            // Rings
-            Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.c2.withOpacity(0.2), width: 1.5),
-              ),
-            ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(begin: const Offset(1,1), end: const Offset(1.05, 1.05), duration: 3.seconds),
-            
-            SizedBox(
-              width: 440,
-              height: 440,
-              child: CustomPaint(
-                painter: DashedRingPainter(color: AppColors.c1.withOpacity(0.3)),
-              ),
-            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 25.seconds),
-
-            Container(
-              width: 420,
-              height: 420,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: SweepGradient(
-                  colors: [AppColors.c1.withOpacity(0), AppColors.c1.withOpacity(0.5), AppColors.c1.withOpacity(0)],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-              ),
-            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 8.seconds),
-
-            // Main Image
-            Container(
-              width: 340,
-              height: 340,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.c2, width: 2),
-                boxShadow: [
-                  BoxShadow(color: AppColors.c1.withOpacity(0.4), blurRadius: 40),
-                  BoxShadow(color: AppColors.c2.withOpacity(0.2), blurRadius: 80),
-                ],
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/profile2.webp',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<Widget> _buildFloatingBadges() {
-    final badges = [
-      {'text': 'React.js', 'icon': FontAwesomeIcons.react, 'color': const Color(0xFF61DAFB), 'top': 0.05, 'left': 0.15, 'dur': 3.0},
-      {'text': 'Node.js', 'icon': FontAwesomeIcons.nodeJs, 'color': const Color(0xFF339933), 'top': 0.15, 'left': 0.85, 'dur': 3.8},
-      {'text': 'AWS', 'icon': FontAwesomeIcons.aws, 'color': const Color(0xFFFF9900), 'top': 0.45, 'left': 0.95, 'dur': 3.3},
-      {'text': 'TypeScript', 'icon': FontAwesomeIcons.code, 'color': const Color(0xFF3178C6), 'top': 0.75, 'left': 0.85, 'dur': 3.5},
-      {'text': 'Docker', 'icon': FontAwesomeIcons.docker, 'color': const Color(0xFF2496ED), 'top': 0.90, 'left': 0.50, 'dur': 3.6},
-      {'text': 'C# / .NET', 'icon': FontAwesomeIcons.terminal, 'color': const Color(0xFF00A4EF), 'top': 0.75, 'left': 0.15, 'dur': 4.0},
-      {'text': 'Python', 'icon': FontAwesomeIcons.python, 'color': const Color(0xFF3776AB), 'top': 0.45, 'left': 0.05, 'dur': 3.7},
-    ];
-
-    return badges.map((b) {
-      return Positioned(
-        top: 500 * (b['top'] as double),
-        left: 500 * (b['left'] as double),
-        child: _buildFloatingBadge(
-          b['text'] as String,
-          b['icon'] as IconData,
-          b['color'] as Color,
-          b['dur'] as double,
-        ),
-      );
-    }).toList();
-  }
-
-  Widget _buildFloatingBadge(String text, IconData icon, Color color, double dur) {
-    return GlassCard(
-      blur: 18,
-      opacity: 0.8,
-      color: const Color(0xD10F0724),
-      borderRadius: BorderRadius.circular(30),
-      border: Border.all(color: color.withOpacity(0.3)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 8),
-            Text(
-              text,
-              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    ).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(begin: -10, end: 10, duration: (dur * 1000).toInt().ms, curve: Curves.easeInOut);
   }
 
   Widget _buildScrollCue() {
@@ -665,10 +719,7 @@ class AboutSection extends StatelessWidget {
     final isMobile = screenWidth < 1000;
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 100.0, horizontal: isMobile ? 24 : 100),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 100),
       child: Column(
         children: [
           const SectionHeader(title: 'About Me'),
@@ -744,20 +795,23 @@ class AboutSection extends StatelessWidget {
 
   Widget _buildHighlights(double screenWidth) {
     final highlights = [
-      {'icon': FontAwesomeIcons.code, 'title': 'Clean Code', 'desc': 'Readable, maintainable, and well-structured code is a priority.', 'color': AppColors.c1},
-      {'icon': FontAwesomeIcons.laptopCode, 'title': 'Modern Stack', 'desc': 'Proficient in MERN, ASP.NET Core, and cloud-native technologies.', 'color': AppColors.c3},
-      {'icon': FontAwesomeIcons.cloudArrowUp, 'title': 'Cloud-Ready', 'desc': 'Experienced deploying scalable apps on AWS with Docker.', 'color': AppColors.c4},
-      {'icon': FontAwesomeIcons.userCheck, 'title': 'User-Focused', 'desc': 'Every decision stems from empathy — fast and intuitive.', 'color': AppColors.c5},
+      {'icon': FontAwesomeIcons.code, 'title': 'Clean Code', 'desc': 'Readable, maintainable, and well-structured architecture.', 'color': AppColors.c1},
+      {'icon': FontAwesomeIcons.laptopCode, 'title': 'Modern Stack', 'desc': 'MERN, ASP.NET Core, and Cloud technologies.', 'color': AppColors.c3},
+      {'icon': FontAwesomeIcons.cloudArrowUp, 'title': 'Cloud-Ready', 'desc': 'Scaling apps with AWS and Docker containers.', 'color': AppColors.c4},
+      {'icon': FontAwesomeIcons.userCheck, 'title': 'User-Centric', 'desc': 'Fast, intuitive, and accessible experiences.', 'color': AppColors.c5},
     ];
 
-    return GridView.count(
-      crossAxisCount: 2,
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 20,
-      crossAxisSpacing: 20,
-      childAspectRatio: 1.1,
-      children: highlights.asMap().entries.map((e) => _buildAboutCard(e.value, e.key)).toList(),
+      itemCount: highlights.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: screenWidth < 500 ? 1 : 2,
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 20,
+        childAspectRatio: screenWidth < 500 ? 1.6 : 1.1,
+      ),
+      itemBuilder: (c, i) => _buildAboutCard(highlights[i], i),
     );
   }
 
@@ -852,8 +906,6 @@ class _SkillsSectionState extends State<SkillsSection> {
     final isMobile = screenWidth < 768;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 100.0),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
       child: Column(
         children: [
           const SectionHeader(title: 'Technical Skills'),
@@ -876,6 +928,73 @@ class _SkillsSectionState extends State<SkillsSection> {
                 _buildSkillCategory('Tools & Other', AppColors.c5, ['Git & GitHub', 'Power BI', 'Python', 'Figma', 'Postman']),
               ],
             ),
+          ),
+          const SizedBox(height: 100),
+          _buildProficiencyChart(screenWidth),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProficiencyChart(double screenWidth) {
+    final isMobile = screenWidth < 768;
+    final skills = [
+      {'label': 'MERN Stack', 'value': 0.95, 'color': AppColors.c1},
+      {'label': 'ASP.NET Core', 'value': 0.88, 'color': AppColors.c2},
+      {'label': 'Cloud / DevOps', 'value': 0.82, 'color': AppColors.c3},
+      {'label': 'Data Analysis', 'value': 0.78, 'color': AppColors.c5},
+    ];
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("CORE PROFICIENCY", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.c1, letterSpacing: 2)),
+          const SizedBox(height: 40),
+          isMobile 
+            ? Column(children: skills.map((s) => _buildProgressBar(s)).toList())
+            : Row(
+                children: [
+                  Expanded(child: Column(children: skills.sublist(0, 2).map((s) => _buildProgressBar(s)).toList())),
+                  const SizedBox(width: 80),
+                  Expanded(child: Column(children: skills.sublist(2).map((s) => _buildProgressBar(s)).toList())),
+                ],
+              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressBar(Map<String, dynamic> s) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(s['label'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              Text("${(s['value'] as double * 100).toInt()}%", style: TextStyle(color: s['color'] as Color, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Fira Code')),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Stack(
+            children: [
+              Container(height: 8, width: double.infinity, decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(4))),
+              FractionallySizedBox(
+                widthFactor: s['value'] as double,
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [s['color'] as Color, (s['color'] as Color).withOpacity(0.5)]),
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [BoxShadow(color: (s['color'] as Color).withOpacity(0.3), blurRadius: 10)],
+                  ),
+                ).animate().shimmer(delay: 1.seconds, duration: 2.seconds),
+              ).animate().slideX(begin: -1, end: 0, duration: 1.5.seconds, curve: Curves.easeOutCubic),
+            ],
           ),
         ],
       ),
@@ -982,18 +1101,16 @@ class _ProjectsSectionState extends State<ProjectsSection> {
     }).toList();
     final displayed = filtered.take(_visibleCount).toList();
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 100.0, horizontal: 24),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
-      child: Column(
-        children: [
-          const SectionHeader(title: 'Featured Projects'),
-          const SizedBox(height: 48),
-          _buildFilters(),
-          const SizedBox(height: 48),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+    return Column(
+      children: [
+        const SectionHeader(title: 'Featured Projects'),
+        const SizedBox(height: 48),
+        _buildFilters(),
+        const SizedBox(height: 48),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
             itemCount: displayed.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: MediaQuery.of(context).size.width < 800 ? 1 : (MediaQuery.of(context).size.width < 1200 ? 2 : 3),
@@ -1006,7 +1123,10 @@ class _ProjectsSectionState extends State<ProjectsSection> {
           if (_visibleCount < filtered.length) ...[
             const SizedBox(height: 64),
             ElevatedButton(
-              onPressed: () => setState(() => _visibleCount += 8),
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                setState(() => _visibleCount += 8);
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.bgCard,
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
@@ -1028,10 +1148,13 @@ class _ProjectsSectionState extends State<ProjectsSection> {
       children: filters.map((f) => ChoiceChip(
         label: Text(f),
         selected: _filter == f,
-        onSelected: (v) => setState(() {
-          _filter = f;
-          _visibleCount = 8;
-        }),
+        onSelected: (v) {
+          HapticFeedback.selectionClick();
+          setState(() {
+            _filter = f;
+            _visibleCount = 8;
+          });
+        },
         backgroundColor: AppColors.bgCard,
         selectedColor: AppColors.c1,
         labelStyle: TextStyle(color: _filter == f ? Colors.white : AppColors.textDim, fontWeight: FontWeight.bold),
@@ -1103,8 +1226,7 @@ class ExperienceSection extends StatelessWidget {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 100.0, horizontal: isMobile ? 24 : 100),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 100),
       child: Column(
         children: [
           const SectionHeader(title: 'Experience & Education'),
@@ -1112,7 +1234,7 @@ class ExperienceSection extends StatelessWidget {
           Stack(
             children: [
               Positioned(left: 20, top: 0, bottom: 0, child: Container(width: 4, decoration: BoxDecoration(gradient: const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [AppColors.c1, AppColors.c2, AppColors.c3]), borderRadius: BorderRadius.circular(4), boxShadow: [BoxShadow(color: AppColors.c2.withOpacity(0.3), blurRadius: 10)]))),
-              Column(children: ContentData.experiences.asMap().entries.map((e) => _buildTimelineItem(e.value, e.key)).toList()),
+              Column(children: ContentData.experiences.asMap().entries.map((e) => _buildTimelineItem(context, e.value, e.key)).toList()),
             ],
           ),
         ],
@@ -1120,28 +1242,60 @@ class ExperienceSection extends StatelessWidget {
     );
   }
 
-  Widget _buildTimelineItem(Experience exp, int i) {
+  Widget _buildTimelineItem(BuildContext context, Experience exp, int i) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      margin: const EdgeInsets.only(bottom: 48, left: 52),
+      margin: EdgeInsets.only(bottom: 48, left: isMobile ? 32 : 52),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Positioned(left: -80, top: 0, child: Container(width: 48, height: 48, decoration: BoxDecoration(shape: BoxShape.circle, gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]), border: Border.all(color: AppColors.bg, width: 4), boxShadow: [BoxShadow(color: AppColors.c1.withOpacity(0.3), blurRadius: 10)]), child: Icon(exp.type == 'work' ? FontAwesomeIcons.briefcase : FontAwesomeIcons.graduationCap, size: 18, color: Colors.white))),
+          Positioned(
+            left: isMobile ? -56 : -80,
+            top: 0,
+            child: Container(
+              width: isMobile ? 40 : 48,
+              height: isMobile ? 40 : 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]),
+                border: Border.all(color: AppColors.bg, width: 4),
+                boxShadow: [BoxShadow(color: AppColors.c1.withOpacity(0.3), blurRadius: 10)],
+              ),
+              child: Icon(
+                exp.type == 'work' ? FontAwesomeIcons.briefcase : FontAwesomeIcons.graduationCap,
+                size: isMobile ? 14 : 18,
+                color: Colors.white,
+              ),
+            ),
+          ),
           GlassCard(
             opacity: 0.05,
             child: Padding(
-              padding: const EdgeInsets.all(28),
+              padding: EdgeInsets.all(isMobile ? 20 : 28),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6), decoration: BoxDecoration(color: AppColors.c1.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.c1.withOpacity(0.3))), child: Text(exp.date, style: const TextStyle(color: AppColors.c1, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Fira Code'))),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(color: AppColors.c1.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.c1.withOpacity(0.3))),
+                    child: Text(exp.date, style: const TextStyle(color: AppColors.c1, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Fira Code')),
+                  ),
                   const SizedBox(height: 16),
-                  Text(exp.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
-                  Text(exp.company, style: const TextStyle(fontSize: 16, color: AppColors.c3, fontWeight: FontWeight.w700)),
+                  Text(exp.title, style: TextStyle(fontSize: isMobile ? 18 : 22, fontWeight: FontWeight.w900)),
+                  Text(exp.company, style: TextStyle(fontSize: isMobile ? 14 : 16, color: AppColors.c3, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 16),
                   const Divider(color: AppColors.border),
                   const SizedBox(height: 8),
-                  ...exp.bullets.map((b) => Padding(padding: const EdgeInsets.only(bottom: 10), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('▹ ', style: TextStyle(color: AppColors.c2, fontSize: 18)), Expanded(child: Text(b, style: const TextStyle(color: AppColors.textMuted, height: 1.5)))]))),
+                  ...exp.bullets.map((b) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('▹ ', style: TextStyle(color: AppColors.c2, fontSize: 18)),
+                        Expanded(child: Text(b, style: TextStyle(color: AppColors.textMuted, height: 1.5, fontSize: isMobile ? 13 : 15))),
+                      ],
+                    ),
+                  )),
                 ],
               ),
             ),
@@ -1172,12 +1326,9 @@ class _CertificationsSectionState extends State<CertificationsSection> {
       return mf && ms;
     }).toList();
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 100.0, horizontal: 24),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
-      child: Column(
-        children: [
-          const SectionHeader(title: 'Licenses & Certifications'),
+    return Column(
+      children: [
+        const SectionHeader(title: 'Licenses & Certifications'),
           const SizedBox(height: 32),
           _buildStatsBar(),
           const SizedBox(height: 40),
@@ -1203,6 +1354,7 @@ class _CertificationsSectionState extends State<CertificationsSection> {
   }
 
   Widget _buildStatsBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
     return GlassCard(
       opacity: 0.05,
       child: Padding(
@@ -1212,9 +1364,26 @@ class _CertificationsSectionState extends State<CertificationsSection> {
           spacing: 40,
           runSpacing: 20,
           children: [
-            _buildStat(ContentData.certs.length.toString(), 'Total Certs'),
-            _buildStat('2', 'Issuers'),
-            _buildStat('5', 'Categories'),
+            screenWidth < 600 ? Column(
+              children: [
+                _buildStat(ContentData.certs.length.toString(), 'Total Certs'),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildStat('10', 'Issuers'),
+                    _buildStat('5', 'Categories'),
+                  ],
+                ),
+              ],
+            ) : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStat(ContentData.certs.length.toString(), 'Total Certs'),
+                _buildStat('10', 'Issuers'),
+                _buildStat('5', 'Categories'),
+              ],
+            ),
           ],
         ),
       ),
@@ -1309,17 +1478,13 @@ class WhyMeSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final isTablet = screenWidth < 1200;
 
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 100.0, horizontal: isMobile ? 24 : 100),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
-      child: Column(
-        children: [
-          const SectionHeader(
-            title: 'Why Work With Me?',
-            subtitle: 'I bring more than just code — I bring commitment, craftsmanship, and a genuine passion for building things that matter.',
-          ),
+    return Column(
+      children: [
+        const SectionHeader(
+          title: 'Why Work With Me?',
+          subtitle: 'I bring more than just code — I bring commitment, craftsmanship, and a genuine passion for building things that matter.',
+        ),
           const SizedBox(height: 64),
           GridView.builder(
             shrinkWrap: true,
@@ -1461,7 +1626,7 @@ class _ContactSectionState extends State<ContactSection> {
     final isMobile = screenWidth < 1000;
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 100.0, horizontal: isMobile ? 24 : 100),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 100),
       child: Column(
         children: [
           const SectionHeader(title: 'Get In Touch', subtitle: "I'm currently open to new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!"),
@@ -1579,11 +1744,14 @@ class _ContactSectionState extends State<ContactSection> {
       ),
       child: ElevatedButton(
         onPressed: () {
+          HapticFeedback.mediumImpact();
           setState(() => _isSending = true);
-          Future.delayed(2.seconds, () => setState(() {
-            _isSending = false;
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Message sent successfully!")));
-          }));
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              setState(() => _isSending = false);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Message sent successfully!")));
+            }
+          });
         },
         style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
         child: Text(_isSending ? "Sending..." : "Send Message", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
