@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'theme.dart';
-import 'sections.dart';
+import 'sections/sections.dart';
+import 'widgets/section_wrapper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -15,6 +16,21 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+class PremiumScrollPhysics extends BouncingScrollPhysics {
+  const PremiumScrollPhysics({super.parent});
+
+  @override
+  PremiumScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return PremiumScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  double get minFlingVelocity => 40.0;
+
+  @override
+  double get dragStartDistanceMotionThreshold => 2.0;
+}
+
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
@@ -22,11 +38,11 @@ class _HomePageState extends State<HomePage> {
 
   final GlobalKey _homeKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
-  final GlobalKey _skillsKey = GlobalKey();
-  final GlobalKey _projectsKey = GlobalKey();
-  final GlobalKey _experienceKey = GlobalKey();
-  final GlobalKey _certificationsKey = GlobalKey();
   final GlobalKey _whyMeKey = GlobalKey();
+  final GlobalKey _experienceKey = GlobalKey();
+  final GlobalKey _projectsKey = GlobalKey();
+  final GlobalKey _skillsKey = GlobalKey();
+  final GlobalKey _certificationsKey = GlobalKey();
   final GlobalKey _blogKey = GlobalKey();
   final GlobalKey _contactKey = GlobalKey();
 
@@ -58,7 +74,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -125,23 +140,24 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      endDrawer: _buildDrawer(context, colorScheme),
+      endDrawer: _buildDrawer(context),
       body: SafeArea(
         top: false,
         child: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
           child: SingleChildScrollView(
             controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
+            physics: const PremiumScrollPhysics(),
             child: Column(
               children: [
+                // Storytelling Layout
                 RepaintBoundary(child: SectionWrapper(key: _homeKey, hasBorder: false, topPadding: 0, bottomPadding: 0, glowColors: const [AppColors.c1, AppColors.c3], child: const HeroSection())),
                 RepaintBoundary(child: SectionWrapper(key: _aboutKey, glowColors: const [AppColors.c2, AppColors.c4], child: const AboutSection())),
-                RepaintBoundary(child: SectionWrapper(key: _skillsKey, glowColors: const [AppColors.c3, AppColors.c1], child: const SkillsSection())),
-                RepaintBoundary(child: SectionWrapper(key: _projectsKey, glowColors: const [AppColors.c6, AppColors.c2], child: const ProjectsSection())),
-                RepaintBoundary(child: SectionWrapper(key: _experienceKey, glowColors: const [AppColors.c5, AppColors.c1], child: const ExperienceSection())),
-                RepaintBoundary(child: SectionWrapper(key: _certificationsKey, glowColors: const [AppColors.c4, AppColors.c7], child: const CertificationsSection())),
                 RepaintBoundary(child: SectionWrapper(key: _whyMeKey, glowColors: const [AppColors.c1, AppColors.c6], child: const WhyMeSection())),
+                RepaintBoundary(child: SectionWrapper(key: _experienceKey, glowColors: const [AppColors.c5, AppColors.c1], child: const ExperienceSection())),
+                RepaintBoundary(child: SectionWrapper(key: _projectsKey, glowColors: const [AppColors.c6, AppColors.c2], child: const ProjectsSection())),
+                RepaintBoundary(child: SectionWrapper(key: _skillsKey, glowColors: const [AppColors.c3, AppColors.c1], child: const SkillsSection())),
+                RepaintBoundary(child: SectionWrapper(key: _certificationsKey, glowColors: const [AppColors.c4, AppColors.c7], child: const CertificationsSection())),
                 RepaintBoundary(child: SectionWrapper(key: _blogKey, glowColors: const [AppColors.c3, AppColors.c5], child: const BlogSection())),
                 RepaintBoundary(child: SectionWrapper(key: _contactKey, hasBorder: false, glowColors: const [AppColors.c1, AppColors.c2], child: const ContactSection())),
                 const FooterSection(),
@@ -194,7 +210,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildDrawer(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildDrawer(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDark;
 
@@ -217,11 +233,11 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     _buildDrawerItem('Home', FontAwesomeIcons.house, _homeKey, isDark),
                     _buildDrawerItem('About', FontAwesomeIcons.user, _aboutKey, isDark),
-                    _buildDrawerItem('Skills', FontAwesomeIcons.bolt, _skillsKey, isDark),
-                    _buildDrawerItem('Projects', FontAwesomeIcons.code, _projectsKey, isDark),
-                    _buildDrawerItem('Experience', FontAwesomeIcons.briefcase, _experienceKey, isDark),
-                    _buildDrawerItem('Certifications', FontAwesomeIcons.certificate, _certificationsKey, isDark),
                     _buildDrawerItem('Why Me', FontAwesomeIcons.circleQuestion, _whyMeKey, isDark),
+                    _buildDrawerItem('Experience', FontAwesomeIcons.briefcase, _experienceKey, isDark),
+                    _buildDrawerItem('Projects', FontAwesomeIcons.code, _projectsKey, isDark),
+                    _buildDrawerItem('Skills', FontAwesomeIcons.bolt, _skillsKey, isDark),
+                    _buildDrawerItem('Certifications', FontAwesomeIcons.certificate, _certificationsKey, isDark),
                     _buildDrawerItem('Blog', FontAwesomeIcons.newspaper, _blogKey, isDark),
                     _buildDrawerItem('Contact', FontAwesomeIcons.envelope, _contactKey, isDark),
                   ],
@@ -296,7 +312,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 20),
-          Text('v1.0.0 Stable', style: TextStyle(color: isDark ? AppColors.textDim : AppColors.textDimLight, fontSize: 11, fontFamily: 'Fira Code')),
+          Text('v1.1.0 Premium', style: TextStyle(color: isDark ? AppColors.textDim : AppColors.textDimLight, fontSize: 11, fontFamily: 'Fira Code')),
         ],
       ),
     );

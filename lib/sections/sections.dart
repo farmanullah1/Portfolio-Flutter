@@ -1,0 +1,10 @@
+export 'hero_section.dart';
+export 'about_section.dart';
+export 'skills_section.dart';
+export 'projects_section.dart';
+export 'experience_section.dart';
+export 'certifications_section.dart';
+export 'why_me_section.dart';
+export 'blog_section.dart';
+export 'contact_section.dart';
+export 'footer_section.dart';

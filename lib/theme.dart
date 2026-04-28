@@ -39,6 +39,18 @@ class AppColors {
   static const List<Color> primaryGradient = [c1, c2];
   static const List<Color> secondaryGradient = [c3, c7];
   static const List<Color> accentGradient = [c5, c6];
+  
+  static const LinearGradient borderGradient = LinearGradient(
+    colors: [Color(0x33FFFFFF), Color(0x0AFFFFFF), Color(0x33FFFFFF)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient premiumGradient = LinearGradient(
+    colors: [c1, c2, c3],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }
 
 class AppTheme {
