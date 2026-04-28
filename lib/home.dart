@@ -1,13 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'theme.dart';
 import 'sections/sections.dart';
-import 'widgets/section_wrapper.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,57 +12,23 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class PremiumScrollPhysics extends BouncingScrollPhysics {
-  const PremiumScrollPhysics({super.parent});
-
-  @override
-  PremiumScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return PremiumScrollPhysics(parent: buildParent(ancestor));
-  }
-
-  @override
-  double get minFlingVelocity => 40.0;
-
-  @override
-  double get dragStartDistanceMotionThreshold => 2.0;
-}
-
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
-  bool _isScrolled = false;
-  double _scrollProgress = 0.0;
-
+  
   final GlobalKey _homeKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
-  final GlobalKey _whyMeKey = GlobalKey();
-  final GlobalKey _experienceKey = GlobalKey();
-  final GlobalKey _projectsKey = GlobalKey();
   final GlobalKey _skillsKey = GlobalKey();
-  final GlobalKey _certificationsKey = GlobalKey();
-  final GlobalKey _blogKey = GlobalKey();
+  final GlobalKey _projectsKey = GlobalKey();
+  final GlobalKey _experienceKey = GlobalKey();
   final GlobalKey _contactKey = GlobalKey();
 
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (_scrollController.hasClients) {
-      setState(() {
-        _isScrolled = _scrollController.offset > 50;
-        _scrollProgress = (_scrollController.offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
-      });
-    }
-  }
-
   void _scrollTo(GlobalKey key) {
-    if (key.currentContext != null) {
+    final context = key.currentContext;
+    if (context != null) {
       Scrollable.ensureVisible(
-        key.currentContext!,
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOut,
+        context,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOutCubic,
       );
     }
   }
@@ -74,254 +36,168 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDark;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(68),
-        child: ClipRRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-            child: AppBar(
-              backgroundColor: _isScrolled
-                  ? (themeProvider.isDark ? AppColors.navbarBg : AppColors.navbarBgLight)
-                  : Colors.transparent,
-              elevation: 0,
-              centerTitle: false,
-              title: ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [AppColors.c1, AppColors.c3, AppColors.c1],
-                ).createShader(bounds),
-                child: const Text(
-                  'Farmanullah.',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 28,
-                    letterSpacing: -1,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(3),
-                child: _isScrolled
-                    ? Container(
-                        height: 3,
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(colors: [AppColors.c1, AppColors.c2, AppColors.c3]),
-                        ),
-                        child: FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: _scrollProgress,
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              boxShadow: [BoxShadow(color: AppColors.c1, blurRadius: 12)],
-                            ),
+        child: AnimatedBuilder(
+          animation: _scrollController,
+          builder: (context, child) {
+            double offset = _scrollController.hasClients ? _scrollController.offset : 0;
+            bool isScrolled = offset > 50;
+            double progress = 0;
+            if (_scrollController.hasClients && _scrollController.position.maxScrollExtent > 0) {
+              progress = (offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
+            }
+
+            return ClipRRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: AppBar(
+                  backgroundColor: isScrolled 
+                    ? (isDark ? AppColors.navbarBg : AppColors.navbarBgLight)
+                    : Colors.transparent,
+                  elevation: 0,
+                  title: _buildLogo(),
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(2),
+                    child: Container(
+                      alignment: Alignment.centerLeft,
+                      height: 2,
+                      width: double.infinity,
+                      child: FractionallySizedBox(
+                        widthFactor: progress,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(colors: [AppColors.c1, AppColors.c2, AppColors.c3]),
+                            boxShadow: [BoxShadow(color: AppColors.c1, blurRadius: 10)],
                           ),
                         ),
-                      )
-                    : const SizedBox(),
-              ),
-              actions: [
-                IconButton(
-                  icon: Icon(themeProvider.isDark ? FontAwesomeIcons.sun : FontAwesomeIcons.moon, size: 18),
-                  onPressed: () => themeProvider.toggleTheme(),
-                  color: themeProvider.isDark ? AppColors.text : AppColors.textLight,
-                ),
-                Builder(
-                  builder: (context) => IconButton(
-                    icon: Icon(Icons.menu, color: themeProvider.isDark ? AppColors.text : AppColors.textLight),
-                    onPressed: () => Scaffold.of(context).openEndDrawer(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      endDrawer: _buildDrawer(context),
-      body: SafeArea(
-        top: false,
-        child: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            physics: const PremiumScrollPhysics(),
-            child: Column(
-              children: [
-                // Storytelling Layout
-                RepaintBoundary(child: SectionWrapper(key: _homeKey, hasBorder: false, topPadding: 0, bottomPadding: 0, glowColors: const [AppColors.c1, AppColors.c3], child: const HeroSection())),
-                RepaintBoundary(child: SectionWrapper(key: _aboutKey, glowColors: const [AppColors.c2, AppColors.c4], child: const AboutSection())),
-                RepaintBoundary(child: SectionWrapper(key: _whyMeKey, glowColors: const [AppColors.c1, AppColors.c6], child: const WhyMeSection())),
-                RepaintBoundary(child: SectionWrapper(key: _experienceKey, glowColors: const [AppColors.c5, AppColors.c1], child: const ExperienceSection())),
-                RepaintBoundary(child: SectionWrapper(key: _projectsKey, glowColors: const [AppColors.c6, AppColors.c2], child: const ProjectsSection())),
-                RepaintBoundary(child: SectionWrapper(key: _skillsKey, glowColors: const [AppColors.c3, AppColors.c1], child: const SkillsSection())),
-                RepaintBoundary(child: SectionWrapper(key: _certificationsKey, glowColors: const [AppColors.c4, AppColors.c7], child: const CertificationsSection())),
-                RepaintBoundary(child: SectionWrapper(key: _blogKey, glowColors: const [AppColors.c3, AppColors.c5], child: const BlogSection())),
-                RepaintBoundary(child: SectionWrapper(key: _contactKey, hasBorder: false, glowColors: const [AppColors.c1, AppColors.c2], child: const ContactSection())),
-                const FooterSection(),
-              ],
-            ),
-          ),
-        ),
-      ),
-      floatingActionButton: _isScrolled
-          ? Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: const LinearGradient(colors: [AppColors.c1, AppColors.c2]),
-                boxShadow: [BoxShadow(color: AppColors.c1.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                  child: FloatingActionButton(
-                    mini: true,
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      _scrollTo(_homeKey);
-                    },
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    child: Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withValues(alpha: 0.15),
-                            Colors.white.withValues(alpha: 0.05),
-                          ],
-                        ),
                       ),
-                      child: const Icon(FontAwesomeIcons.chevronUp, color: Colors.white, size: 14),
                     ),
                   ),
-                ),
-              ),
-            ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack)
-          : null,
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDark = themeProvider.isDark;
-
-    return Drawer(
-      backgroundColor: Colors.transparent,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: (isDark ? AppColors.bg : Colors.white).withValues(alpha: 0.85),
-            border: Border(left: BorderSide(color: isDark ? AppColors.border : AppColors.borderLight, width: 0.5)),
-          ),
-          child: Column(
-            children: [
-              _buildDrawerHeader(isDark),
-              Divider(color: isDark ? AppColors.border : AppColors.borderLight, height: 1),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                  children: [
-                    _buildDrawerItem('Home', FontAwesomeIcons.house, _homeKey, isDark),
-                    _buildDrawerItem('About', FontAwesomeIcons.user, _aboutKey, isDark),
-                    _buildDrawerItem('Why Me', FontAwesomeIcons.circleQuestion, _whyMeKey, isDark),
-                    _buildDrawerItem('Experience', FontAwesomeIcons.briefcase, _experienceKey, isDark),
-                    _buildDrawerItem('Projects', FontAwesomeIcons.code, _projectsKey, isDark),
-                    _buildDrawerItem('Skills', FontAwesomeIcons.bolt, _skillsKey, isDark),
-                    _buildDrawerItem('Certifications', FontAwesomeIcons.certificate, _certificationsKey, isDark),
-                    _buildDrawerItem('Blog', FontAwesomeIcons.newspaper, _blogKey, isDark),
-                    _buildDrawerItem('Contact', FontAwesomeIcons.envelope, _contactKey, isDark),
+                  actions: [
+                    if (MediaQuery.of(context).size.width > 800) 
+                      _buildNavLinks()
+                    else
+                      IconButton(
+                        icon: const Icon(Icons.menu),
+                        onPressed: () => Scaffold.of(context).openEndDrawer(),
+                      ),
+                    IconButton(
+                      icon: Icon(isDark ? FontAwesomeIcons.sun : FontAwesomeIcons.moon, size: 18),
+                      onPressed: () => themeProvider.toggleTheme(),
+                    ),
+                    const SizedBox(width: 8),
                   ],
                 ),
               ),
-              _buildDrawerFooter(isDark),
-            ],
-          ),
+            );
+          },
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerHeader(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.only(top: 60, bottom: 30, left: 24, right: 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.c1.withValues(alpha: 0.15), Colors.transparent],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.c1, width: 2),
-              image: const DecorationImage(image: AssetImage('assets/profile2.webp'), fit: BoxFit.cover),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text('Farmanullah Ansari', style: TextStyle(color: isDark ? Colors.white : AppColors.textLight, fontSize: 20, fontWeight: FontWeight.w900)),
-          const Text('Full-Stack Engineer', style: TextStyle(color: AppColors.c1, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+      endDrawer: _buildDrawer(),
+      body: CustomScrollView(
+        controller: _scrollController,
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildSliverSection(_homeKey, const HeroSection(), topPadding: 0),
+          _buildSliverSection(_aboutKey, const AboutSection()),
+          _buildSliverSection(_skillsKey, const SkillsSection()),
+          _buildSliverSection(_projectsKey, const ProjectsSection()),
+          _buildSliverSection(_experienceKey, const ExperienceSection()),
+          _buildSliverSection(GlobalKey(), const CertificationsSection()),
+          _buildSliverSection(GlobalKey(), const WhyMeSection()),
+          _buildSliverSection(GlobalKey(), const BlogSection()),
+          _buildSliverSection(_contactKey, const ContactSection()),
+          const SliverToBoxAdapter(child: FooterSection()),
         ],
       ),
-    );
-  }
-
-  Widget _buildDrawerItem(String title, IconData icon, GlobalKey key, bool isDark) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(icon, color: isDark ? AppColors.textDim : AppColors.textDimLight, size: 18),
-        title: Text(title, style: TextStyle(color: isDark ? Colors.white : AppColors.textLight, fontWeight: FontWeight.w600, fontSize: 15)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        hoverColor: AppColors.c1.withValues(alpha: 0.1),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          Navigator.pop(context);
-          _scrollTo(key);
+      floatingActionButton: AnimatedBuilder(
+        animation: _scrollController,
+        builder: (context, child) {
+          double offset = _scrollController.hasClients ? _scrollController.offset : 0;
+          return AnimatedScale(
+            scale: offset > 400 ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 300),
+            child: FloatingActionButton(
+              onPressed: () => _scrollTo(_homeKey),
+              backgroundColor: AppColors.c1,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          );
         },
       ),
     );
   }
 
-  Widget _buildDrawerFooter(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
+  Widget _buildLogo() {
+    return const Text(
+      "Farmanullah.",
+      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -1, color: AppColors.c1),
+    );
+  }
+
+  Widget _buildNavLinks() {
+    return Row(
+      children: [
+        _navBtn("Home", _homeKey),
+        _navBtn("About", _aboutKey),
+        _navBtn("Skills", _skillsKey),
+        _navBtn("Projects", _projectsKey),
+        _navBtn("Contact", _contactKey),
+      ],
+    );
+  }
+
+  Widget _navBtn(String label, GlobalKey key) {
+    return TextButton(
+      onPressed: () => _scrollTo(key),
+      child: Text(label, style: const TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold)),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      backgroundColor: AppColors.bg,
+      child: ListView(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildFooterIcon(FontAwesomeIcons.github, 'https://github.com/farmanullah1', isDark),
-              _buildFooterIcon(FontAwesomeIcons.linkedin, 'https://linkedin.com/in/farmanullah-ansari', isDark),
-              _buildFooterIcon(FontAwesomeIcons.twitter, 'https://x.com/farmanullah9088', isDark),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text('v1.1.0 Premium', style: TextStyle(color: isDark ? AppColors.textDim : AppColors.textDimLight, fontSize: 11, fontFamily: 'Fira Code')),
+          const DrawerHeader(child: Center(child: Text("Farmanullah Ansari", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)))),
+          _drawerItem("Home", _homeKey),
+          _drawerItem("About", _aboutKey),
+          _drawerItem("Skills", _skillsKey),
+          _drawerItem("Projects", _projectsKey),
+          _drawerItem("Experience", _experienceKey),
+          _drawerItem("Contact", _contactKey),
         ],
       ),
     );
   }
 
-  Widget _buildFooterIcon(IconData icon, String url, bool isDark) {
-    return IconButton(
-      icon: Icon(icon, color: isDark ? AppColors.textDim : AppColors.textDimLight, size: 18),
-      onPressed: () => launchUrl(Uri.parse(url)),
+  Widget _drawerItem(String label, GlobalKey key) {
+    return ListTile(
+      title: Text(label),
+      onTap: () {
+        Navigator.pop(context);
+        _scrollTo(key);
+      },
+    );
+  }
+
+  Widget _buildSliverSection(GlobalKey key, Widget child, {double topPadding = 100}) {
+    return SliverPadding(
+      padding: EdgeInsets.fromLTRB(
+        MediaQuery.of(context).size.width < 800 ? 20 : 60,
+        topPadding,
+        MediaQuery.of(context).size.width < 800 ? 20 : 60,
+        100,
+      ),
+      sliver: SliverToBoxAdapter(
+        key: key,
+        child: child,
+      ),
     );
   }
 }

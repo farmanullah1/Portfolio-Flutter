@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../theme.dart';
 
 class TypingCursor extends StatelessWidget {
@@ -12,6 +11,6 @@ class TypingCursor extends StatelessWidget {
       height: 24,
       margin: const EdgeInsets.only(left: 4),
       color: AppColors.c1,
-    ).animate(onPlay: (c) => c.repeat()).fadeOut(duration: 500.ms);
+    );
   }
 }
